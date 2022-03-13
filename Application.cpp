@@ -60,9 +60,9 @@ int main(void)
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
     PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(0, 0, 4));
 
-    glm::vec3 cubeTwoPos = glm::vec3(0, 0, 0.5f);
+    glm::vec3 cubeTwoPos = glm::vec3(-1.0, 0, 0.5f);
     PGP_EPrimitive::CreateCube(cubeTwoPos, 0.3f);
-    glm::vec3 cubeOnePos = glm::vec3(-0.5f, 0.8f, 0);
+    glm::vec3 cubeOnePos = glm::vec3(0.8f, 0.8f, 0);
     PGP_EPrimitive::CreateCube(cubeOnePos, 0.7f);
 
 
