@@ -11,10 +11,10 @@ namespace PGP_Primitives {
 		const static GLuint totalByteSize = 64 * sizeof(float);
 
 	public:
-		Cube(glm::vec3 centerPos, int initScale)
+		Cube(glm::vec3 centerPos, float initScale)
 		{
 			SetPivotPoint(centerPos);
-			scale = initScale;
+			this->InitializeCubeVerticesPositions(centerPos, initScale);
 		}
 
 		void SetVertex(int vertexIndex, glm::vec4 vertexPosition, glm::vec4 vertexColor)
@@ -28,9 +28,11 @@ namespace PGP_Primitives {
 		{
 			return &vertices[index];
 		}
+
+		void InitializeCubeVerticesPositions(glm::vec3 centerPos, float scale);
 	};
 
-	struct Triangle : public Entity {
+	/*struct Triangle : public Entity {
 		Vertex vertices[3];
 		const static GLuint totalTriangleByteSize = 24 * sizeof(float);
 
@@ -87,7 +89,7 @@ namespace PGP_Primitives {
 					vertices[vertex].color = newColor;
 			}
 		}
-	};
+	};*/
 }
 
 using namespace PGP_Primitives;
@@ -99,8 +101,8 @@ public:
 	static std::list<Cube*> allCubes;
 
 	static Cube* CreateCube(glm::vec3 centerPos, float scale);
-	static void UpdateCubeBufferData(void);
-	static void DrawAllCubes();
+	static void UpdateAllCubesBufferData(void);
+	static void DrawAllCubes(void);
 
 protected:
 	static void UpdateCubeIndicesBufferData(void);
@@ -120,6 +122,7 @@ public:
 	static void TranslateCube(Cube* cube, glm::vec3 translationVector, bool bUpdateBuffer);
 	static void MoveCubeTo(Cube* cube, glm::vec3 targetPosition, bool bUpdateBuffer);
 	static void RotateCube(Cube* cube, float degrees, glm::vec3 rotAxis, bool bUpdateBuffer);
+	static void ScaleCube(Cube* cube, float newScale, bool bUpdateBuffer);
 
 	//static void TranslateTriangle(Triangle* triangle, glm::vec3 translationVector);
 	//static void RotateTriangle(Triangle* triangle, float degrees, glm::vec3 rotAxis);

@@ -6,11 +6,10 @@ glLight, glLightModel, glMaterial
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "PGP_Window.h"
 #include "PGP_EntityBase.h"
 #include "PGP_EntityPrimitive.h"
 #include "PGP_ShaderProgram.h"
-#include "PGP_Time.h"
+#include "PGP_Camera.h"
 #include <iostream>
 #include <string>
 #include <glm.hpp>
@@ -44,7 +43,7 @@ int main(void)
     std::chrono::time_point<std::chrono::steady_clock> initTimePoint = std::chrono::steady_clock::now();
 
     /* Initialize window */
-    PGP_Window* window = new PGP_Window(1920, 1280, "Hello World");
+    PGP_Window* window = new PGP_Window(PGP_Config::screenWidth, PGP_Config::screenHeight, "Hello World");
 
     /* Initialize library */
     if (!glfwInit())
@@ -59,12 +58,12 @@ int main(void)
     //std::cout << endl << "TRIANGLE COUNT: " << CTY_EntityBase::allTriangles.size() << endl;
 
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
-
+    PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(0, 0, 4));
 
     glm::vec3 cubeTwoPos = glm::vec3(0, 0, 0.5f);
-    PGP_EPrimitive::CreateCube(cubeTwoPos, 0.6f);
+    PGP_EPrimitive::CreateCube(cubeTwoPos, 0.3f);
     glm::vec3 cubeOnePos = glm::vec3(-0.5f, 0.8f, 0);
-    PGP_EPrimitive::CreateCube(cubeOnePos, 0.999f);
+    PGP_EPrimitive::CreateCube(cubeOnePos, 0.7f);
 
 
     std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << endl;
@@ -76,19 +75,21 @@ int main(void)
     {
         PGP_Time::UpdateTime();
         /* Transform */
+        int count = 1;
         for (Cube* cube : PGP_EPrimitive::allCubes)
         {
            // PGP_EPrimitiveTransform::TranslateCube(cube, glm::vec3(0, 0.05f * PGP_Time::deltaTime, 0), true);
             //PGP_EPrimitiveTransform::MoveCubeTo(cube, cube->pivotPointPosition + glm::vec3(-1.f * PGP_Time::deltaTime), true);
            //glm::vec3 vec = glm::vec3(0.1f*PGP_Time::deltaTime);
-            PGP_EPrimitiveTransform::RotateCube(cube, rotationSpeed, glm::vec3(0, 1.0f, 0), true);
+           // PGP_EPrimitiveTransform::ScaleCube(cube, cube->scale + 0.001f, false);
+            PGP_EPrimitiveTransform::RotateCube(cube, rotationSpeed*count++, glm::vec3(0, 1.0f, 0), true);
         }
-        PGP_EPrimitive::UpdateCubeBufferData();
+        PGP_EPrimitive::UpdateAllCubesBufferData();
 
-        //GLuint modelID = glGetUniformLocation(program, "M");
-        //glm::mat4 model = glm::rotate(glm::radians(rot += 15.0f*PGP_Time::deltaTime), glm::vec3(0.0f, 1.0f, 0.0f));
-        //glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
+        //Controls
+        camera->UpdateCameraInput(window->p_window, program);
         Update(window->p_window);
+
         PGP_Time::SleepUntilFrameEnd();
     }
     while(true) {}

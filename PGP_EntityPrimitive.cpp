@@ -6,40 +6,21 @@ std::list<Cube*> PGP_EPrimitive::allCubes = std::list<Cube*>();
 
 Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f) 
 {
-	float verticesPositions[32] =
-	{
-		centerPos.x-0.5f*scale, centerPos.y + 0.5f * scale, centerPos.z -0.5f * scale, 1.0f,  //0
-		centerPos.x + 0.5f*scale, centerPos.y + 0.5f * scale, centerPos.z -0.5f * scale, 1.0f, //1
-	    centerPos.x -0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //2
-		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //3
-	    centerPos.x -0.5f * scale, centerPos.y -0.5f * scale, centerPos.z -0.5f * scale, 1.0f, //4
-		centerPos.x + 0.5f * scale, centerPos.y -0.5f * scale, centerPos.z -0.5f * scale, 1.0f, //5
-	    centerPos.x -0.5f * scale, centerPos.y -0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //6
-		centerPos.x + 0.5f * scale, centerPos.y -0.5f * scale, centerPos.z + 0.5f * scale, 1.0f //7
-	};
-
 	float colors[32]{
-		1.f, 0.f, 0.f, 1.0f,
-		1.f, 0.f, 0.f, 1.0f,
-		1.f, 1.f, 0.25f, 1.0f,
-		1.f, 1.f, 0.25f, 1.0f,
-		0.f, 1.f, 0.f, 1.0f,
-		0.f, 1.f, 0.f, 1.0f,
-		0.3f, 0.0f, 1.f, 1.0f,
-		0.5f, 0.0f, 1.f, 1.0f
+	1.f, 0.f, 0.f, 1.0f,
+	1.f, 0.f, 0.f, 1.0f,
+	1.f, 1.f, 0.25f, 1.0f,
+	1.f, 1.f, 0.25f, 1.0f,
+	0.f, 1.f, 0.f, 1.0f,
+	0.f, 1.f, 0.f, 1.0f,
+	0.3f, 0.0f, 1.f, 1.0f,
+	0.5f, 0.0f, 1.f, 1.0f
 	};
 
 	Cube* newCube = new Cube(centerPos, scale);
 
 	for (int i = 0; i < 8; i++)
 	{
-		glm::vec4 vertexPos = glm::vec4(verticesPositions[i * 4], 
-			verticesPositions[i * 4 + 1], 
-			verticesPositions[i*4 + 2], 
-			1.0f);
-
-		newCube->vertices[i].position = vertexPos;
-
 		glm::vec4 vertexCol = glm::vec4(colors[i * 4],
 			colors[i * 4 + 1],
 			colors[i * 4 + 2],	
@@ -49,12 +30,39 @@ Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f)
 	}
 
 	PGP_EPrimitive::allCubes.push_back(newCube);
-	UpdateCubeBufferData();
+	UpdateAllCubesBufferData();
 	UpdateCubeIndicesBufferData();
 	return newCube;
 }
 
-void PGP_EPrimitive::UpdateCubeBufferData() 
+void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
+{
+	scale = newScale;
+
+	float verticesPositions[32] =
+	{
+		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f,  //0
+		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //1
+		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //2
+		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //3
+		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //4
+		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //5
+		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //6
+		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f //7
+	};
+
+	for (int i = 0; i < 8; i++) 
+	{
+		glm::vec4 vertexPos = glm::vec4(verticesPositions[i * 4],
+			verticesPositions[i * 4 + 1],
+			verticesPositions[i * 4 + 2],
+			1.0f);
+
+		vertices[i].position = vertexPos;
+	}
+}
+
+void PGP_EPrimitive::UpdateAllCubesBufferData() 
 {
 	GLuint vertex_buffer;
 	glGenBuffers(1, &vertex_buffer);
@@ -154,7 +162,7 @@ void PGP_EPrimitiveTransform::TranslateCube(Cube* cube, glm::vec3 translationVec
 	}
 
 	if (bUpdateBuffer)
-		PGP_EPrimitive::UpdateCubeBufferData();
+		PGP_EPrimitive::UpdateAllCubesBufferData();
 }
 
 void PGP_EPrimitiveTransform::MoveCubeTo(Cube* cube, glm::vec3 targetPosition, bool bUpdateBuffer)
@@ -178,9 +186,13 @@ void PGP_EPrimitiveTransform::RotateCube(Cube* cube, float degrees, glm::vec3 ro
 	PGP_EPrimitiveTransform::MoveCubeTo(cube, originalPosition, false);
 
 	if (bUpdateBuffer)
-		PGP_EPrimitive::UpdateCubeBufferData();
+		PGP_EPrimitive::UpdateAllCubesBufferData();
 };
 
+void PGP_EPrimitiveTransform::ScaleCube(Cube* cube, float newScale, bool bUpdateBuffer)
+{
+	cube->InitializeCubeVerticesPositions(cube->pivotPointPosition, newScale);
+}
 
 /*void PGP_EntityPrimitive::CreateShapes(void)
 {

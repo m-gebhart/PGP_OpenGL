@@ -148,12 +148,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="PGP_Camera.cpp" />
     <ClCompile Include="PGP_ShaderProgram.cpp" />
     <ClCompile Include="PGP_Time.cpp" />
     <ClCompile Include="PGP_Window.cpp" />
     <ClCompile Include="PGP_EntityPrimitive.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PGP_Camera.h" />
+    <ClInclude Include="PGP_Config.h" />
     <ClInclude Include="PGP_EntityObject.h" />
     <ClInclude Include="PGP_EntityPrimitive.h" />
     <ClInclude Include="PGP_ShaderProgram.h" />

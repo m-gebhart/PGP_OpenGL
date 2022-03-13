@@ -61,24 +61,6 @@ GLuint PGP_ShaderProgram::CreateAndUseNewProgram()
 void PGP_ShaderProgram::UseProgram(GLuint program)
 {
     glUseProgram(program);
-    GLuint ProjectionID = glGetUniformLocation(program, "P");
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)1920 / (float)1280, 0.1f, 100.0f);
-    glUniformMatrix4fv(ProjectionID, 1, GL_FALSE, &projection[0][0]);
-
-    GLuint viewID = glGetUniformLocation(program, "V");
-    glm::vec3 cameraPos = glm::vec3(0, 1, 4);
-    glm::mat4 view = glm::lookAt(
-        cameraPos,
-        glm::vec3(0, 0, 0),
-        glm::vec3(0, 1, 0)
-    );
-    glUniformMatrix4fv(viewID, 1, GL_FALSE, &view[0][0]);
-
-    GLuint modelID = glGetUniformLocation(program, "M");
-    glm::mat4 model = glm::mat4(1.0f);
-    glUniformMatrix4fv(modelID, 1, GL_FALSE, &model[0][0]);
-
-    glm::mat4 mvp = projection * view * model;
 }
 
 void PGP_ShaderProgram::ReadFile(const std::string fileName, std::string& output)

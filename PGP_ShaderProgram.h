@@ -7,6 +7,7 @@
 #include <vector>
 #include <glm.hpp>
 #include <ext.hpp>
+#include "PGP_Camera.h"
 
 using namespace std;
 
