@@ -2,13 +2,14 @@
 #include "PGP_EntityBase.h"
 #include <vector>
 #include <list>
+#include <iostream>
 
 namespace PGP_Primitives {
 	struct Cube : public Entity {
 	public:
-		Vertex vertices[8];
+		Vertex* vertices[8];
 		const static GLuint totalVertexCount = 8;
-		const static GLuint totalByteSize = 64 * sizeof(float);
+		const static GLuint totalByteSize = 80 * sizeof(float); // totalVertexCount * totalVertexSize (10)
 
 	public:
 		Cube(glm::vec3 centerPos, float initScale)
@@ -17,16 +18,22 @@ namespace PGP_Primitives {
 			this->InitializeCubeVerticesPositions(centerPos, initScale);
 		}
 
+		Cube(const Cube& other)
+		{
+			SetPivotPoint(other.pivotPointPosition);
+			InitializeCubeVerticesPositions(other.pivotPointPosition, other.scale);
+		}
+
 		void SetVertex(int vertexIndex, glm::vec4 vertexPosition, glm::vec4 vertexColor)
 		{
-			vertices[vertexIndex].position = vertexPosition;
-			vertices[vertexIndex].color = vertexColor;
-			vertices[vertexIndex].SetPivotOffsetWithPivotPoint(pivotPointPosition);
+			vertices[vertexIndex]->position = vertexPosition;
+			vertices[vertexIndex]->color = vertexColor;
+			vertices[vertexIndex]->SetPivotOffsetWithPivotPoint(pivotPointPosition);
 		}
 
 		Vertex* GetVertex(int index)
 		{
-			return &vertices[index];
+			return vertices[index];
 		}
 
 		void InitializeCubeVerticesPositions(glm::vec3 centerPos, float scale);

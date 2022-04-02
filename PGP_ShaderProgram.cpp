@@ -24,6 +24,7 @@ bool PGP_ShaderProgram::CheckForError(int shaderID)
         glDeleteShader(shaderID);
         return 0;
     }
+    return 1;
 }
 
 GLuint PGP_ShaderProgram::CreateProgram(const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc)

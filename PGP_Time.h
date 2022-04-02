@@ -2,7 +2,7 @@
 #include <chrono>
 #include <thread>
 
-static class PGP_Time {
+class PGP_Time {
 private:
 	static bool bTicking;
 	static std::chrono::time_point<std::chrono::steady_clock> startTime;

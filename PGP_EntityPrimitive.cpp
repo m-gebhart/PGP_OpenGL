@@ -19,81 +19,20 @@ Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f)
 
 	Cube* newCube = new Cube(centerPos, scale);
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++)
 	{
 		glm::vec4 vertexCol = glm::vec4(colors[i * 4],
 			colors[i * 4 + 1],
 			colors[i * 4 + 2],	
 			colors[i*4 + 3]);
 
-		newCube->vertices[i].color = vertexCol;
+		newCube->vertices[i]->color = vertexCol;
 	}
 
 	PGP_EPrimitive::allCubes.push_back(newCube);
 	UpdateAllCubesBufferData();
 	UpdateCubeIndicesBufferData();
 	return newCube;
-}
-
-void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
-{
-	scale = newScale;
-
-	float verticesPositions[32] =
-	{
-		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f,  //0
-		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //1
-		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //2
-		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //3
-		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //4
-		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //5
-		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //6
-		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f //7
-	};
-
-	for (int i = 0; i < 8; i++) 
-	{
-		glm::vec4 vertexPos = glm::vec4(verticesPositions[i * 4],
-			verticesPositions[i * 4 + 1],
-			verticesPositions[i * 4 + 2],
-			1.0f);
-
-		vertices[i].position = vertexPos;
-	}
-}
-
-void PGP_EPrimitive::UpdateAllCubesBufferData() 
-{
-	GLuint vertex_buffer;
-	glGenBuffers(1, &vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, Cube::totalByteSize * allCubes.size() * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-	
-	unsigned int cubeCount = 0;
-	for (Cube* cube : allCubes)
-	{
-		for (int vertex = 0; vertex < 8; vertex++)
-		{
-			float vertexPosData[4];
-			for (int pos = 0; pos < 4; pos++)
-				vertexPosData[pos] = cube->GetVertex(vertex)->position[pos];
-			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize, sizeof(float) * 4, vertexPosData);
-
-			float vertexColData[4];
-			for (int col = 0; col < 4; col++)
-				vertexColData[col] = cube->GetVertex(vertex)->color[col];
-			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::colorByteOffset, sizeof(float) * 4, vertexColData);
-		}
-		cubeCount++;
-	}
-	
-	//0 = position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, 0);
-	//1 = color
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, (const void*)(Vertex::colorByteOffset));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 GLuint cubeIndices[36] =
@@ -112,6 +51,89 @@ GLuint cubeIndices[36] =
 	6, 3, 7
 };
 
+void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
+{
+	scale = newScale;
+
+	float verticesPositions[32] =
+	{
+		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //0 - left top back
+		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //1 - right top back
+		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //2 - left top front
+		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //3 - right top front
+		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //4 - left bottom back
+		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //5 - right bottom back
+		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //6 - left bottom front
+		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f  //7 - right bottom front
+	};
+
+	float uvCoords[16] = 
+	{
+		0, 1,
+		1, 1,
+		0, 0,
+		1, 0,
+		0, 1,
+		1, 1,
+		0, 0,
+		1, 0
+	};
+
+	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++) 
+	{
+		glm::vec4 vertexPos = glm::vec4(verticesPositions[i * 4],
+			verticesPositions[i * 4 + 1],
+			verticesPositions[i * 4 + 2],
+			1.0f);
+
+		vertices[i] = new Vertex(vertexPos);
+		vertices[i]->SetUV(glm::vec2(uvCoords[i*2], uvCoords[i*2+1]));
+	}
+}
+
+void PGP_EPrimitive::UpdateAllCubesBufferData() 
+{
+	GLuint vertex_buffer;
+	glGenBuffers(1, &vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	glBufferData(GL_ARRAY_BUFFER, Cube::totalByteSize * allCubes.size() * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+	
+	unsigned int cubeCount = 0;
+	for (Cube* cube : allCubes)
+	{
+		for (int vertex = 0; vertex < PGP_Primitives::Cube::totalVertexCount; vertex++)
+		{
+			float vertexPosData[4];
+			for (int pos = 0; pos < 4; pos++)
+				vertexPosData[pos] = cube->GetVertex(vertex)->position[pos];
+			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize, sizeof(float) * 4, vertexPosData);
+
+			float vertexColData[4];
+			for (int col = 0; col < 4; col++)
+				vertexColData[col] = cube->GetVertex(vertex)->color[col];
+			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::colorByteOffset, sizeof(float) * 4, vertexColData);
+		
+			float vertexUVData[2];
+			for (int uv = 0; uv < 2; uv++)
+				vertexUVData[uv] = cube->GetVertex(vertex)->uv[uv];
+			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::UVByteOffset, sizeof(float) * 2, vertexUVData);
+		}
+		cubeCount++;
+	}
+	
+	//0 = position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, 0);
+	//1 = color
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, (const void*)(Vertex::colorByteOffset));
+	//2 = uv
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, (const void*)(Vertex::UVByteOffset));
+	
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void PGP_EPrimitive::UpdateCubeIndicesBufferData() 
 {
 	//UpdateIndicesData
@@ -120,11 +142,11 @@ void PGP_EPrimitive::UpdateCubeIndicesBufferData()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * allCubes.size() * sizeof(int), nullptr, GL_DYNAMIC_DRAW);
 
-	for (int cube = 0; cube < allCubes.size(); cube++)
+	for (unsigned int cube = 0; cube < allCubes.size(); cube++)
 	{
 		GLuint indices[36] = {};
 		for (int index = 0; index < 36; index++)
-			indices[index] = cubeIndices[index] + cube * 8;
+			indices[index] = cubeIndices[index] + cube * PGP_Primitives::Cube::totalVertexCount;
 		
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 36 * cube * sizeof(int), sizeof(int) * 36, indices);
 	}
@@ -149,14 +171,14 @@ void PGP_EPrimitiveTransform::TranslateCube(Cube* cube, glm::vec3 translationVec
 		else
 		{
 			//cache pivot point offset on translation of first vertex
-			glm::vec3 pivotOffset = glm::vec3(cube->vertices[vertexID].position) - cube->pivotPointPosition;
-			cube->vertices[vertexID].SetPivotOffset(pivotOffset);
+			glm::vec3 pivotOffset = glm::vec3(cube->vertices[vertexID]->position) - cube->pivotPointPosition;
+			cube->vertices[vertexID]->SetPivotOffset(pivotOffset);
 
 			//actual translation
 			PGP_EPrimitiveTransform::ApplyMatrixOnVertexPosition(translationMatrix, cube->GetVertex(vertexID));
 
 			//set new pivot point
-			glm::vec3 newPivotPos = glm::vec3(glm::vec3(cube->vertices[vertexID].position) - pivotOffset);
+			glm::vec3 newPivotPos = glm::vec3(glm::vec3(cube->vertices[vertexID]->position) - pivotOffset);
 			cube->SetPivotPoint(newPivotPos);
 		}
 	}

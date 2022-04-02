@@ -13,41 +13,41 @@ PGP_Camera::PGP_Camera(PGP_Window* gameWindow, GLuint initProgram, int initFOV, 
 
 float rot = 0;
 
-void PGP_Camera::UpdateCameraInput(GLFWwindow* window, GLuint program)
+bool PGP_Camera::UpdateCameraInput(GLFWwindow* window, GLuint program)
 {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
+    {
+        glfwSetWindowShouldClose(window, 1);
+        return false;
+    }
+
     glm::vec3 translationVector = glm::vec3(0);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        translationVector -= glm::vec3(0, 0, camSpeed * PGP_Time::deltaTime);
+        translationVector += (orientation-cameraPos) * camSpeed * PGP_Time::deltaTime;
     }
     else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        translationVector += glm::vec3(0, 0, camSpeed * PGP_Time::deltaTime);
+        translationVector -= (orientation - cameraPos) * camSpeed * PGP_Time::deltaTime;
     }
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-       translationVector -= glm::vec3(camSpeed * PGP_Time::deltaTime, 0, 0);
+       glm::vec3 left = glm::cross(orientation - cameraPos, glm::vec3(0, -1, 0));
+       translationVector += left * camSpeed * PGP_Time::deltaTime;
     }
     else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-       translationVector += glm::vec3(camSpeed * PGP_Time::deltaTime, 0, 0);
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
-        translationVector += glm::vec3(0, camSpeed * PGP_Time::deltaTime, 0);
-    }
-    else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-    {
-        translationVector -= glm::vec3(0, camSpeed * PGP_Time::deltaTime, 0);
+        glm::vec3 right = glm::cross(glm::vec3(0, -1, 0), orientation - cameraPos);
+        translationVector += right * camSpeed * PGP_Time::deltaTime;
     }
 
     if (translationVector != glm::vec3(0))
         SetView(program, cameraPos + translationVector, orientation + translationVector);
 
     UpdateMouseInput(window, program);
+    return true;
 }
 
 void PGP_Camera::UpdateMouseInput(GLFWwindow* window, GLuint program)
@@ -55,22 +55,22 @@ void PGP_Camera::UpdateMouseInput(GLFWwindow* window, GLuint program)
     double xPos, yPos;
     glfwGetCursorPos(window, &xPos, &yPos);
 
-    float horizontalAngle = (width / 2) - xPos;
+    float horizontalAngle = (width / 2) - (float)xPos;
     glm::mat3 horizontalRotation = glm::rotate(glm::radians(horizontalAngle * mouseXSensitivity), glm::vec3(0, 1.f, 0));
 
-    float verticalAngle = (height / 2) - yPos;
+    float verticalAngle = (height / 2) - (float)yPos;
     glm::mat3 verticalRotation = glm::rotate(glm::radians(verticalAngle * mouseYSensitivity), glm::vec3(1.f, 0, 0));
 
     SetView(program, cameraPos, (horizontalRotation * verticalRotation * glm::vec3(0, 0, -1.f)) + cameraPos);
 }
 
-void PGP_Camera::SetProjection(GLuint program, int newFOV, float newWidth, float newHeight)
+void PGP_Camera::SetProjection(GLuint program, int newFOV, int newWidth, int newHeight)
 {
     fov = newFOV;
     width = newWidth;
     height = newHeight;
 	GLuint ProjectionID = glGetUniformLocation(program, "P");
-	projection = glm::perspective(glm::radians((float)fov), width / height, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians((float)fov), (float)(width / height), 0.1f, 100.0f);
 	glUniformMatrix4fv(ProjectionID, 1, GL_FALSE, &projection[0][0]);
 }
 

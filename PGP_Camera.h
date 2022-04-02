@@ -15,24 +15,21 @@ private:
 	glm::mat4 view;
 	glm::mat4 model;
 
-	int fov;
-	float width;
-	float height;
+	int fov, width, height;
 	glm::vec3 cameraPos;
 	float camSpeed = 1.f;
 	float mouseXSensitivity = 0.35f, mouseYSensitivity = 0.2f;
 	glm::vec3 orientation;
-	glm::mat4 MVP;
 
 	GLFWwindow* window;
 
 public:
 	PGP_Camera(PGP_Window *gameWindow, GLuint program, int initFOV, glm::vec3 initCamPos);
-	void UpdateCameraInput(GLFWwindow* window, GLuint program);
+	bool UpdateCameraInput(GLFWwindow* window, GLuint program);
 	void UpdateMouseInput(GLFWwindow* window, GLuint program);
 
 protected:
 	void SetView(GLuint program, glm::vec3 newCamPos, glm::vec3 newLookAtPos);
-	void SetProjection(GLuint program, int newFOV, float newWidth, float newHeight);
+	void SetProjection(GLuint program, int newFOV, int newWidth, int newHeight);
 	void SetModel(GLuint program, glm::mat4 newModel);
 };

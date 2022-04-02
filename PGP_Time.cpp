@@ -37,6 +37,6 @@ void PGP_Time::UpdateTime()
 void PGP_Time::SleepUntilFrameEnd()
 {
 	float passedTimeOfCurrentFrame = std::chrono::duration<float>(std::chrono::steady_clock::now() - currentTimePoint).count();
-	int sleepTimeMS = (1.0f / PGP_Time::FPS - passedTimeOfCurrentFrame)*1000.f;
-	std::this_thread::sleep_for(std::chrono::milliseconds(sleepTimeMS));
+	float sleepTimeMS = (1.0f / PGP_Time::FPS - passedTimeOfCurrentFrame)*1000.f;
+	std::this_thread::sleep_for(std::chrono::milliseconds((int)sleepTimeMS));
 }

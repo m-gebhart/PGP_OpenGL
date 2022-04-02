@@ -16,6 +16,7 @@ glLight, glLightModel, glMaterial
 #include <ext.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtx/transform.hpp>
+#include "PGP_Texture.h"
 
 void Update(GLFWwindow* window)
 {
@@ -43,7 +44,7 @@ int main(void)
     std::chrono::time_point<std::chrono::steady_clock> initTimePoint = std::chrono::steady_clock::now();
 
     /* Initialize window */
-    PGP_Window* window = new PGP_Window(PGP_Config::screenWidth, PGP_Config::screenHeight, "Hello World");
+    PGP_Window* window = new PGP_Window(PGP_Config::screenWidth, PGP_Config::screenHeight, "Procedural Generation");
 
     /* Initialize library */
     if (!glfwInit())
@@ -60,6 +61,8 @@ int main(void)
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
     PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(0, 0, 4));
 
+    glm::vec3 cubeThreePos = glm::vec3(0.05f);
+    PGP_EPrimitive::CreateCube(cubeThreePos, 0.15f);
     glm::vec3 cubeTwoPos = glm::vec3(-1.0, 0, 0.5f);
     PGP_EPrimitive::CreateCube(cubeTwoPos, 0.3f);
     glm::vec3 cubeOnePos = glm::vec3(0.8f, 0.8f, 0);
@@ -69,30 +72,33 @@ int main(void)
     std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << endl;
     std::cout << "\nRUNNING..." << endl;
 
+    PGP_Texture* newTexture = new PGP_Texture(".\\kenney_pixelplatformer\\tiles\\tile_0026.png", 0);
+    newTexture->SetUniformSlot(program, "textureSampler", 0);
+
     float rotationSpeed = 10.0f;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window->p_window))
     {
+
         PGP_Time::UpdateTime();
         /* Transform */
-        int count = 1;
+        int rotationCount = 1;
         for (Cube* cube : PGP_EPrimitive::allCubes)
         {
            // PGP_EPrimitiveTransform::TranslateCube(cube, glm::vec3(0, 0.05f * PGP_Time::deltaTime, 0), true);
             //PGP_EPrimitiveTransform::MoveCubeTo(cube, cube->pivotPointPosition + glm::vec3(-1.f * PGP_Time::deltaTime), true);
            //glm::vec3 vec = glm::vec3(0.1f*PGP_Time::deltaTime);
            // PGP_EPrimitiveTransform::ScaleCube(cube, cube->scale + 0.001f, false);
-            PGP_EPrimitiveTransform::RotateCube(cube, rotationSpeed*count++, glm::vec3(0, 1.0f, 0), true);
+          //  PGP_EPrimitiveTransform::RotateCube(cube, rotationSpeed*rotationCount++, glm::vec3(0, 1.0f, 0), true);
         }
+
         PGP_EPrimitive::UpdateAllCubesBufferData();
-
-        //Controls
-        camera->UpdateCameraInput(window->p_window, program);
-        Update(window->p_window);
-
-        PGP_Time::SleepUntilFrameEnd();
+        if (camera->UpdateCameraInput(window->p_window, program)) 
+        {
+            Update(window->p_window);
+            PGP_Time::SleepUntilFrameEnd();
+        }
     }
-    while(true) {}
     glfwTerminate();
 
    // CTY_EntityBase::DeleteAllTriangles();
