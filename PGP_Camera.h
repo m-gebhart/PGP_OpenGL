@@ -10,6 +10,8 @@
 #include <gtx/transform.hpp>
 
 class PGP_Camera {
+public:
+	static float camSpeed = 1.f;
 private: 
 	glm::mat4 projection;
 	glm::mat4 view;
@@ -17,7 +19,6 @@ private:
 
 	int fov, width, height;
 	glm::vec3 cameraPos;
-	float camSpeed = 1.f;
 	float mouseXSensitivity = 0.35f, mouseYSensitivity = 0.2f;
 	glm::vec3 orientation;
 

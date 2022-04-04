@@ -4,7 +4,7 @@
 std::list<Cube*> PGP_EPrimitive::allCubes = std::list<Cube*>();
 //std::list<Triangle*> PGP_EPrimitive::allTriangles = std::list<Triangle*>();
 
-Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f) 
+Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f, GLuint textureShaderProgram = 0) 
 {
 	float colors[32]{
 	1.f, 0.f, 0.f, 1.0f,
@@ -17,7 +17,7 @@ Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f)
 	0.5f, 0.0f, 1.f, 1.0f
 	};
 
-	Cube* newCube = new Cube(centerPos, scale);
+	Cube* newCube = new Cube(centerPos, scale, CubeType::ground, textureShaderProgram);
 
 	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++)
 	{
@@ -32,23 +32,22 @@ Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f)
 	PGP_EPrimitive::allCubes.push_back(newCube);
 	UpdateAllCubesBufferData();
 	UpdateCubeIndicesBufferData();
+
+	PGP_EPrimitiveTransform::RotateCube(newCube, 180.f, glm::vec3(1.0f, 0, 0), true);
+
 	return newCube;
 }
 
-GLuint cubeIndices[36] =
+float uvCoords[16] =
 {
-	0, 1, 3, //top
-	0, 3, 2,
-	1, 4, 5, //front
-	1, 0, 4,
-	4, 6, 7, //bottom
-	4, 7, 5,
-	3, 1, 5, //right
-	3, 5, 7,
-	2, 4, 0, //left
-	2, 6, 4,
-	6, 2, 3, //back
-	6, 3, 7
+	1.f, 1.f, //0
+	0.f, 1.f, //1
+	0.f, 1.f, //2
+	1.f, 1.f, //3
+	1.f, 0.f, //4
+	0.f, 0.f, //5
+	0.f, 0.f, //6
+	1.f, 0.f  //7
 };
 
 void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
@@ -67,18 +66,6 @@ void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale =
 		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f  //7 - right bottom front
 	};
 
-	float uvCoords[16] = 
-	{
-		0, 1,
-		1, 1,
-		0, 0,
-		1, 0,
-		0, 1,
-		1, 1,
-		0, 0,
-		1, 0
-	};
-
 	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++) 
 	{
 		glm::vec4 vertexPos = glm::vec4(verticesPositions[i * 4],
@@ -89,6 +76,13 @@ void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale =
 		vertices[i] = new Vertex(vertexPos);
 		vertices[i]->SetUV(glm::vec2(uvCoords[i*2], uvCoords[i*2+1]));
 	}
+}
+
+PGP_Texture* Cube::SetTexture(GLuint textureProgram, CubeType cubeType)
+{
+	texture = new PGP_Texture(".\\kenney_pixelplatformer\\tiles\\tile_ground.png", 0);
+	texture->SetUniformSlot(textureProgram, "textureSampler", 0);
+	return texture;
 }
 
 void PGP_EPrimitive::UpdateAllCubesBufferData() 
@@ -103,19 +97,26 @@ void PGP_EPrimitive::UpdateAllCubesBufferData()
 	{
 		for (int vertex = 0; vertex < PGP_Primitives::Cube::totalVertexCount; vertex++)
 		{
-			float vertexPosData[4];
-			for (int pos = 0; pos < 4; pos++)
-				vertexPosData[pos] = cube->GetVertex(vertex)->position[pos];
+			float vertexPosData[4] = {
+				cube->GetVertex(vertex)->position[0],
+				cube->GetVertex(vertex)->position[1],
+				cube->GetVertex(vertex)->position[2],
+				cube->GetVertex(vertex)->position[3]
+			};
 			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize, sizeof(float) * 4, vertexPosData);
 
-			float vertexColData[4];
-			for (int col = 0; col < 4; col++)
-				vertexColData[col] = cube->GetVertex(vertex)->color[col];
+			float vertexColData[4] = {
+				cube->GetVertex(vertex)->color[0],
+				cube->GetVertex(vertex)->color[1],
+				cube->GetVertex(vertex)->color[2],
+				cube->GetVertex(vertex)->color[3]
+			};
 			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::colorByteOffset, sizeof(float) * 4, vertexColData);
 		
-			float vertexUVData[2];
-			for (int uv = 0; uv < 2; uv++)
-				vertexUVData[uv] = cube->GetVertex(vertex)->uv[uv];
+			float vertexUVData[2] = { 
+				cube->GetVertex(vertex)->uv[0], 
+				cube->GetVertex(vertex)->uv[1] 
+			};
 			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::UVByteOffset, sizeof(float) * 2, vertexUVData);
 		}
 		cubeCount++;
@@ -133,6 +134,22 @@ void PGP_EPrimitive::UpdateAllCubesBufferData()
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
+GLuint cubeIndices[36] =
+{
+	0, 1, 3, //top
+	0, 3, 2,
+	1, 0, 4, //front
+	1, 4, 5,
+	4, 6, 7, //bottom
+	4, 7, 5,
+	3, 1, 5, //right
+	3, 5, 7,
+	2, 6, 4, //left
+	2, 4, 0,
+	6, 2, 3, //back
+	6, 3, 7
+};
 
 void PGP_EPrimitive::UpdateCubeIndicesBufferData() 
 {

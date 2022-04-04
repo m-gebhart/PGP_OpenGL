@@ -1,26 +1,40 @@
 #pragma once
 #include "PGP_EntityBase.h"
+#include "PGP_Texture.h"
 #include <vector>
 #include <list>
 #include <iostream>
 
+enum CubeType { ground, water, sand, bush };
+
 namespace PGP_Primitives {
+
 	struct Cube : public Entity {
 	public:
+		CubeType type = ground;
 		Vertex* vertices[8];
 		const static GLuint totalVertexCount = 8;
 		const static GLuint totalByteSize = 80 * sizeof(float); // totalVertexCount * totalVertexSize (10)
+	private:
+		PGP_Texture* texture;
+		GLuint textureProgram;
 
 	public:
-		Cube(glm::vec3 centerPos, float initScale)
+		Cube(glm::vec3 centerPos, float initScale, CubeType cubeType, GLuint textureShaderProgram)
 		{
 			SetPivotPoint(centerPos);
-			this->InitializeCubeVerticesPositions(centerPos, initScale);
+			type = cubeType;
+			textureProgram = textureShaderProgram;
+			texture = SetTexture(textureShaderProgram, type);
+			InitializeCubeVerticesPositions(centerPos, initScale);
 		}
 
 		Cube(const Cube& other)
 		{
 			SetPivotPoint(other.pivotPointPosition);
+			type = other.type;
+			textureProgram = other.textureProgram;
+			texture = SetTexture(textureProgram, other.type);
 			InitializeCubeVerticesPositions(other.pivotPointPosition, other.scale);
 		}
 
@@ -37,6 +51,7 @@ namespace PGP_Primitives {
 		}
 
 		void InitializeCubeVerticesPositions(glm::vec3 centerPos, float scale);
+		PGP_Texture* SetTexture(GLuint shaderProgram, CubeType cubeType);
 	};
 
 	/*struct Triangle : public Entity {
@@ -107,7 +122,7 @@ public:
 	/* --- CUBE ---*/
 	static std::list<Cube*> allCubes;
 
-	static Cube* CreateCube(glm::vec3 centerPos, float scale);
+	static Cube* CreateCube(glm::vec3 centerPos, float scale, GLuint textureShaderProgram);
 	static void UpdateAllCubesBufferData(void);
 	static void DrawAllCubes(void);
 
