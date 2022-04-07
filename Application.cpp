@@ -19,7 +19,7 @@ glLight, glLightModel, glMaterial
 #include <gtc/matrix_transform.hpp>
 #include <gtx/transform.hpp>
 
-/*Container of all Cubes*/
+/*Containing all Cubes of project*/
 std::vector<std::list<Cube*>> AllCubes;
 
 void Update(GLFWwindow* window)
@@ -58,24 +58,14 @@ int main(void)
 
     /*Initialize Shader Program and Camera*/
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
-    PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(0, 0, 4));
+    PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(-5, 10, -10));
 
     /*Create 2D Cube Array*/
     AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
     PGP_Generator::InitializeAllCubesList(AllCubes);
 
-    glm::vec3 cubeThreePos = glm::vec3(0.05f);
-    Cube* cube1 = PGP_EPrimitive::CreateCube(ECubeType::ground, cubeThreePos, 0.15f);
-    AllCubes[ECubeType::ground].push_back(cube1);
-
-    glm::vec3 cubeTwoPos = glm::vec3(-1.0, -1.5f, -0.5f);
-    Cube* cube2 = PGP_EPrimitive::CreateCube(ECubeType::snow, cubeTwoPos, 0.3f);
-    AllCubes[ECubeType::snow].push_back(cube2);
-
-    glm::vec3 cubeOnePos = glm::vec3(0.8f, 1.2f, 0);
-    Cube* cube3 = PGP_EPrimitive::CreateCube(ECubeType::water, cubeOnePos, 0.7f);
-    AllCubes[ECubeType::water].push_back(cube3);
-
+    /*Procedural Generation*/
+    PGP_Generator::CreateTerrain(AllCubes);
 
     std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << endl;
     std::cout << "\nRUNNING..." << endl;
@@ -87,11 +77,12 @@ int main(void)
         if (camera->UpdateCameraInput(window->p_window, program)) 
         {
             Update(window->p_window);
-            PGP_Time::SleepUntilFrameEnd();
         }
+        PGP_Time::SleepUntilFrameEnd();
     }
+    /*Close Application*/
     glfwTerminate();
-
     //to-do: delete instances and buffer data
+
     return 0;
 }

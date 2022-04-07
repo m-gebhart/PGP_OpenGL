@@ -74,13 +74,19 @@ PGP_Texture* Cube::SetTexture(ECubeType cubeType)
 {
 	switch (cubeType) {
 	case 0: /*ground*/
-		texture = new PGP_Texture(".\\Ressources\\tile_ground.png", 0);
+		texture = new PGP_Texture(".\\Ressources\\tile_ground.png", cubeType);
 		break;
 	case 1: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\tile_water.png", 1);
+		texture = new PGP_Texture(".\\Ressources\\tile_water.png", cubeType);
 		break;
 	case 2: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\tile_snow.png", 2);
+		texture = new PGP_Texture(".\\Ressources\\tile_snow.png", cubeType);
+		break;
+	case 3: /*ground*/
+		texture = new PGP_Texture(".\\Ressources\\tile_sand.png", cubeType);
+		break;
+	case 4: /*water*/
+		texture = new PGP_Texture(".\\Ressources\\tile_bush.png", cubeType);
 		break;
 		/*TO BE CONTNUED*/
 	}
@@ -101,6 +107,7 @@ void PGP_EPrimitive::UpdateAndDrawCubes(std::list<Cube*> cubes, GLuint textureSl
 
 void PGP_EPrimitive::UpdateCubesBufferData(std::list<Cube*> cubes) 
 {
+	/* TO-DO: Memory optimization, first create vertice data then glBufferData() before using any glBufferSubData()*/
 	GLuint vertex_buffer;
 	glGenBuffers(1, &vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -171,16 +178,15 @@ void PGP_EPrimitive::UpdateCubeIndicesBufferData(std::list<Cube*> cubes)
 	GLuint index_buffer;
 	glGenBuffers(1, &index_buffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * cubes.size() * sizeof(int), nullptr, GL_DYNAMIC_DRAW);
+	int *indices = new int[36 * cubes.size()];
 
 	for (unsigned int cube = 0; cube < cubes.size(); cube++)
 	{
-		GLuint indices[36] = {};
 		for (int index = 0; index < 36; index++)
-			indices[index] = cubeIndices[index] + cube * PGP_Primitives::Cube::totalVertexCount;
-		
-		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 36 * cube * sizeof(int), sizeof(int) * 36, indices);
+			indices[36 * cube + index] = cubeIndices[index] + cube * PGP_Primitives::Cube::totalVertexCount;
 	}
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * cubes.size() * sizeof(int), indices, GL_DYNAMIC_DRAW);
 }
 
 void PGP_EPrimitive::DrawAllCubes(std::list<Cube*> cubes)

@@ -18,7 +18,7 @@ namespace PGP_Primitives {
 
 	struct Cube : public Entity {
 	public:
-		ECubeType type = ground;
+		ECubeType type = ECubeType::ground;
 		Vertex* vertices[8];
 		const static GLuint totalVertexCount = 8;
 		const static GLuint totalByteSize = 80 * sizeof(float); // totalVertexCount * totalVertexSize (10)
