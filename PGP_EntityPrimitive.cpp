@@ -1,10 +1,7 @@
 #include "PGP_EntityPrimitive.h"
 #include <iostream>
 
-std::list<Cube*> PGP_EPrimitive::allCubes = std::list<Cube*>();
-//std::list<Triangle*> PGP_EPrimitive::allTriangles = std::list<Triangle*>();
-
-Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f, GLuint textureShaderProgram = 0) 
+Cube* PGP_EPrimitive::CreateCube(ECubeType cubeType, glm::vec3 centerPos, float scale, GLuint textureShaderProgram) 
 {
 	float colors[32]{
 	1.f, 0.f, 0.f, 1.0f,
@@ -17,7 +14,7 @@ Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f, GLuint 
 	0.5f, 0.0f, 1.f, 1.0f
 	};
 
-	Cube* newCube = new Cube(centerPos, scale, CubeType::ground, textureShaderProgram);
+	Cube* newCube = new Cube(centerPos, scale, cubeType, textureShaderProgram);
 
 	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++)
 	{
@@ -28,12 +25,7 @@ Cube* PGP_EPrimitive::CreateCube(glm::vec3 centerPos, float scale = 1.f, GLuint 
 
 		newCube->vertices[i]->color = vertexCol;
 	}
-
-	PGP_EPrimitive::allCubes.push_back(newCube);
-	UpdateAllCubesBufferData();
-	UpdateCubeIndicesBufferData();
-
-	PGP_EPrimitiveTransform::RotateCube(newCube, 180.f, glm::vec3(1.0f, 0, 0), true);
+	PGP_EPrimitiveTransform::RotateCube(newCube, 180.f, glm::vec3(1.0f, 0, 0));
 
 	return newCube;
 }
@@ -78,22 +70,44 @@ void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale =
 	}
 }
 
-PGP_Texture* Cube::SetTexture(GLuint textureProgram, CubeType cubeType)
+PGP_Texture* Cube::SetTexture(ECubeType cubeType)
 {
-	texture = new PGP_Texture(".\\kenney_pixelplatformer\\tiles\\tile_ground.png", 0);
-	texture->SetUniformSlot(textureProgram, "textureSampler", 0);
+	switch (cubeType) {
+	case 0: /*ground*/
+		texture = new PGP_Texture(".\\Ressources\\tile_ground.png", 0);
+		break;
+	case 1: /*water*/
+		texture = new PGP_Texture(".\\Ressources\\tile_water.png", 1);
+		break;
+	case 2: /*water*/
+		texture = new PGP_Texture(".\\Ressources\\tile_snow.png", 2);
+		break;
+		/*TO BE CONTNUED*/
+	}
 	return texture;
 }
 
-void PGP_EPrimitive::UpdateAllCubesBufferData() 
+void PGP_EPrimitive::UpdateAndDrawCubes(std::list<Cube*> cubes, GLuint textureSlot, GLuint shaderProgram)
+{
+	if (!cubes.empty()) 
+	{
+		(*cubes.begin())->texture->ActivateTexture(0); //slot 0: main / albedo texture
+		(*cubes.begin())->texture->SetUniformSlot(0, "textureSampler", 0);
+		PGP_EPrimitive::UpdateCubesBufferData(cubes);
+		PGP_EPrimitive::UpdateCubeIndicesBufferData(cubes);
+		PGP_EPrimitive::DrawAllCubes(cubes);
+	}
+}
+
+void PGP_EPrimitive::UpdateCubesBufferData(std::list<Cube*> cubes) 
 {
 	GLuint vertex_buffer;
 	glGenBuffers(1, &vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, Cube::totalByteSize * allCubes.size() * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, Cube::totalByteSize * cubes.size() * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 	
 	unsigned int cubeCount = 0;
-	for (Cube* cube : allCubes)
+	for (Cube* cube : cubes)
 	{
 		for (int vertex = 0; vertex < PGP_Primitives::Cube::totalVertexCount; vertex++)
 		{
@@ -114,8 +128,8 @@ void PGP_EPrimitive::UpdateAllCubesBufferData()
 			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::colorByteOffset, sizeof(float) * 4, vertexColData);
 		
 			float vertexUVData[2] = { 
-				cube->GetVertex(vertex)->uv[0], 
-				cube->GetVertex(vertex)->uv[1] 
+				cube->GetVertex(vertex)->uv[0],
+				cube->GetVertex(vertex)->uv[1]
 			};
 			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::UVByteOffset, sizeof(float) * 2, vertexUVData);
 		}
@@ -151,15 +165,15 @@ GLuint cubeIndices[36] =
 	6, 3, 7
 };
 
-void PGP_EPrimitive::UpdateCubeIndicesBufferData() 
+void PGP_EPrimitive::UpdateCubeIndicesBufferData(std::list<Cube*> cubes)
 {
 	//UpdateIndicesData
 	GLuint index_buffer;
 	glGenBuffers(1, &index_buffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * allCubes.size() * sizeof(int), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * cubes.size() * sizeof(int), nullptr, GL_DYNAMIC_DRAW);
 
-	for (unsigned int cube = 0; cube < allCubes.size(); cube++)
+	for (unsigned int cube = 0; cube < cubes.size(); cube++)
 	{
 		GLuint indices[36] = {};
 		for (int index = 0; index < 36; index++)
@@ -169,12 +183,12 @@ void PGP_EPrimitive::UpdateCubeIndicesBufferData()
 	}
 }
 
-void PGP_EPrimitive::DrawAllCubes()
+void PGP_EPrimitive::DrawAllCubes(std::list<Cube*> cubes)
 {
-	glDrawElements(GL_TRIANGLES, 36 * allCubes.size(), GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, 36 * cubes.size(), GL_UNSIGNED_INT, nullptr);
 }
 
-void PGP_EPrimitiveTransform::TranslateCube(Cube* cube, glm::vec3 translationVector, bool bUpdateBuffer)
+void PGP_EPrimitiveTransform::TranslateCube(Cube* cube, glm::vec3 translationVector)
 {
 	glm::mat4 identityMatrix = glm::mat4(1);
 	glm::mat4 translationMatrix = glm::translate(identityMatrix, translationVector);
@@ -199,22 +213,19 @@ void PGP_EPrimitiveTransform::TranslateCube(Cube* cube, glm::vec3 translationVec
 			cube->SetPivotPoint(newPivotPos);
 		}
 	}
-
-	if (bUpdateBuffer)
-		PGP_EPrimitive::UpdateAllCubesBufferData();
 }
 
-void PGP_EPrimitiveTransform::MoveCubeTo(Cube* cube, glm::vec3 targetPosition, bool bUpdateBuffer)
+void PGP_EPrimitiveTransform::MoveCubeTo(Cube* cube, glm::vec3 targetPosition)
 {
 	glm::vec3 translationVector = targetPosition - cube->pivotPointPosition;
-	TranslateCube(cube, translationVector, bUpdateBuffer);
+	TranslateCube(cube, translationVector);
 }
 
-void PGP_EPrimitiveTransform::RotateCube(Cube* cube, float degrees, glm::vec3 rotAxis, bool bUpdateBuffer)
+void PGP_EPrimitiveTransform::RotateCube(Cube* cube, float degrees, glm::vec3 rotAxis)
 {
 	//set position back to origin (0,0,0) for matrix calculation
 	glm::vec3 originalPosition = cube->pivotPointPosition;
-	PGP_EPrimitiveTransform::MoveCubeTo(cube, glm::vec3(0), false);
+	PGP_EPrimitiveTransform::MoveCubeTo(cube, glm::vec3(0));
 
 	//actual rotation
 	glm::mat4 rotationMatrix = glm::rotate(glm::radians(degrees), rotAxis);
@@ -222,10 +233,7 @@ void PGP_EPrimitiveTransform::RotateCube(Cube* cube, float degrees, glm::vec3 ro
 		PGP_EPrimitiveTransform::ApplyMatrixOnVertexPosition(rotationMatrix, cube->GetVertex(vertexID));
 
 	//set back to previous position
-	PGP_EPrimitiveTransform::MoveCubeTo(cube, originalPosition, false);
-
-	if (bUpdateBuffer)
-		PGP_EPrimitive::UpdateAllCubesBufferData();
+	PGP_EPrimitiveTransform::MoveCubeTo(cube, originalPosition);
 };
 
 void PGP_EPrimitiveTransform::ScaleCube(Cube* cube, float newScale, bool bUpdateBuffer)

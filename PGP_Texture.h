@@ -14,11 +14,13 @@ private:
 	int width;
 	int bpp;
 
+	static GLuint textureArray[];
+
 	unsigned char* dataBuffer;
 
 public:
-	PGP_Texture(const char* pathToFile, int texture_id);
-	void LoadTexture();
+	PGP_Texture(const char* pathToFile, int new_textureID);
+	void InitTexture();
 	void ActivateTexture(int slot);
 	void DeactivateTextures();
 	void SetUniformSlot(GLuint program, const char* uniformName, int slot);

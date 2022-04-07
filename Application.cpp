@@ -10,13 +10,17 @@ glLight, glLightModel, glMaterial
 #include "PGP_EntityPrimitive.h"
 #include "PGP_ShaderProgram.h"
 #include "PGP_Camera.h"
+#include "PGP_Texture.h"
+#include "PGP_Generator.h"
 #include <iostream>
 #include <string>
 #include <glm.hpp>
 #include <ext.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtx/transform.hpp>
-#include "PGP_Texture.h"
+
+/*Container of all Cubes*/
+std::vector<std::list<Cube*>> AllCubes;
 
 void Update(GLFWwindow* window)
 {
@@ -27,8 +31,7 @@ void Update(GLFWwindow* window)
 
     /* Render */
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    PGP_EPrimitive::DrawAllCubes();
-    //glDrawArrays(GL_TRIANGLES, 0, 3 * CTY_EntityBase::allTriangles.size());
+    PGP_Generator::DrawAllCubes(AllCubes);
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
@@ -40,7 +43,6 @@ void Update(GLFWwindow* window)
 int main(void)
 {
     std::cout << "Initializing..." << std::endl;
-
     std::chrono::time_point<std::chrono::steady_clock> initTimePoint = std::chrono::steady_clock::now();
 
     /* Initialize window */
@@ -54,36 +56,34 @@ int main(void)
 
     window->InitGLSettings();
 
+    /*Initialize Shader Program and Camera*/
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
     PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(0, 0, 4));
 
+    /*Create 2D Cube Array*/
+    AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
+    PGP_Generator::InitializeAllCubesList(AllCubes);
+
     glm::vec3 cubeThreePos = glm::vec3(0.05f);
-    PGP_EPrimitive::CreateCube(cubeThreePos, 0.15f, program);
+    Cube* cube1 = PGP_EPrimitive::CreateCube(ECubeType::ground, cubeThreePos, 0.15f);
+    AllCubes[ECubeType::ground].push_back(cube1);
+
     glm::vec3 cubeTwoPos = glm::vec3(-1.0, -1.5f, -0.5f);
-    PGP_EPrimitive::CreateCube(cubeTwoPos, 0.3f, program);
+    Cube* cube2 = PGP_EPrimitive::CreateCube(ECubeType::snow, cubeTwoPos, 0.3f);
+    AllCubes[ECubeType::snow].push_back(cube2);
+
     glm::vec3 cubeOnePos = glm::vec3(0.8f, 1.2f, 0);
-    Cube* rotatedCube = PGP_EPrimitive::CreateCube(cubeOnePos, 0.7f, program);
+    Cube* cube3 = PGP_EPrimitive::CreateCube(ECubeType::water, cubeOnePos, 0.7f);
+    AllCubes[ECubeType::water].push_back(cube3);
+
 
     std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << endl;
     std::cout << "\nRUNNING..." << endl;
 
-    //float rotationSpeed = 1.0f;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window->p_window))
     {
         PGP_Time::UpdateTime();
-        /* Transform Simulation - WIP Test / Purposes*/
-        /*int rotationCount = 1;
-        for (Cube* cube : PGP_EPrimitive::allCubes)
-        {
-           // PGP_EPrimitiveTransform::TranslateCube(cube, glm::vec3(0, 0.05f * PGP_Time::deltaTime, 0), true);
-            //PGP_EPrimitiveTransform::MoveCubeTo(cube, cube->pivotPointPosition + glm::vec3(-1.f * PGP_Time::deltaTime), true);
-           //glm::vec3 vec = glm::vec3(0.1f*PGP_Time::deltaTime);
-           // PGP_EPrimitiveTransform::ScaleCube(cube, cube->scale + 0.001f, false);
-            //PGP_EPrimitiveTransform::RotateCube(cube, rotationSpeed*rotationCount++, glm::vec3(0, 1.0f, 0), true);
-        }*/
-
-        PGP_EPrimitive::UpdateAllCubesBufferData();
         if (camera->UpdateCameraInput(window->p_window, program)) 
         {
             Update(window->p_window);
@@ -92,6 +92,6 @@ int main(void)
     }
     glfwTerminate();
 
-   // CTY_EntityBase::DeleteAllTriangles();
+    //to-do: delete instances and buffer data
     return 0;
 }

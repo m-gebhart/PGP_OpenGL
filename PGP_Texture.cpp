@@ -1,31 +1,29 @@
 #include "PGP_Texture.h"
 #include <stb_image.cpp>
 
-PGP_Texture::PGP_Texture(const char* pathToFile, int texture_id) 
-	: width(16), height(16), bpp(0), textureID(texture_id), filepath(pathToFile), dataBuffer(nullptr)
+PGP_Texture::PGP_Texture(const char* pathToFile, int new_textureID)
+	: width(16), height(16), bpp(0), textureID(new_textureID), filepath(pathToFile), dataBuffer(nullptr)
 {
-	//stbi_set_flip_vertically_on_load(true);
 	dataBuffer = stbi_load(pathToFile, &width, &height, &bpp, 4);
-	LoadTexture();
+	InitTexture();
+	stbi_image_free(dataBuffer);
 }
 
-void PGP_Texture::LoadTexture()
+void PGP_Texture::InitTexture()
 {
-	ActivateTexture(0);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataBuffer);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dataBuffer);
-	
 	//glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void PGP_Texture::ActivateTexture(int slot)
 {
-	glGenTextures(1, &textureID);
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 }

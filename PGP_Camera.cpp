@@ -11,7 +11,7 @@ PGP_Camera::PGP_Camera(PGP_Window* gameWindow, GLuint initProgram, int initFOV, 
    // glm::mat4 mvp = projection * view * model;
 }
 
-float rot = 0;
+float PGP_Camera::camSpeed = 1.f;
 
 bool PGP_Camera::UpdateCameraInput(GLFWwindow* window, GLuint program)
 {
@@ -42,6 +42,11 @@ bool PGP_Camera::UpdateCameraInput(GLFWwindow* window, GLuint program)
         glm::vec3 right = glm::cross(glm::vec3(0, -1, 0), orientation - cameraPos);
         translationVector += right * camSpeed * PGP_Time::deltaTime;
     }
+
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        camSpeed += 0.5f;
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && camSpeed >= 1.f)
+        camSpeed -= 0.5f;
 
     if (translationVector != glm::vec3(0))
         SetView(program, cameraPos + translationVector, orientation + translationVector);

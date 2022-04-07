@@ -11,7 +11,7 @@
 
 class PGP_Camera {
 public:
-	static float camSpeed = 1.f;
+	static float camSpeed;
 private: 
 	glm::mat4 projection;
 	glm::mat4 view;
