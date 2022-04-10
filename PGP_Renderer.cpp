@@ -44,7 +44,8 @@ void PGP_Renderer::UpdateCubesBufferData(std::list<Cube*>& cubes)
 		}
 		cubeCount++;
 	}
-	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * cubes.size() * sizeof(float), verticesData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * cubes.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
+	delete[] verticesData;
 
 	//0 = position
 	glEnableVertexAttribArray(0);
@@ -55,8 +56,6 @@ void PGP_Renderer::UpdateCubesBufferData(std::list<Cube*>& cubes)
 	//2 = uv
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, Vertex::totalDataSizeInBytes, (const void*)(Vertex::UVByteOffsetInBytes));
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 const int cubeIndicesSize = 36;
@@ -90,10 +89,17 @@ void PGP_Renderer::UpdateCubeIndicesBufferData(std::list<Cube*>& cubes)
 			indices[cubeIndicesSize * cube + index] = cubeIndices[index] + cube * PGP_Primitives::Cube::totalVertexCount;
 	}
 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * cubes.size() * sizeof(int), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * cubes.size() * sizeof(int), indices, GL_DYNAMIC_DRAW);
+	delete[] indices;
 }
 
 void PGP_Renderer::DrawAllCubes(std::list<Cube*>& cubes)
 {
-	glDrawElements(GL_TRIANGLES, cubeIndicesSize * cubes.size(), GL_UNSIGNED_INT, nullptr);
+	try {
+		glDrawElements(GL_TRIANGLES, cubeIndicesSize * cubes.size(), GL_UNSIGNED_INT, nullptr);
+	}
+	catch(const std::exception& ex)
+	{
+		std::cout << "Exception Occured while Drawing!" << std::endl;
+	}
 }

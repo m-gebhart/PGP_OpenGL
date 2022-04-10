@@ -37,8 +37,11 @@ void Update(GLFWwindow* window)
 
 int main(void)
 {
-    std::cout << "Initializing..." << std::endl;
     std::chrono::time_point<std::chrono::steady_clock> initTimePoint = std::chrono::steady_clock::now();
+
+    std::cout << "Welcome to my Procedural Generation Project!\nPlease define the horizontal Terrain Size: ";
+    std::cin >> PGP_Generator::terrainSize;
+    std::cout << "Loading..." << std::endl;
 
     /* Initialize window */
     PGP_Window* window = new PGP_Window(PGP_Config::screenWidth, PGP_Config::screenHeight, "Procedural Generation");
@@ -48,6 +51,8 @@ int main(void)
         return -1;
     std::cout << "GLFW: Initialized!" << std::endl;
     std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
+
+
 
     window->InitGLSettings();
 
@@ -61,6 +66,7 @@ int main(void)
 
     /*Procedural Generation*/
     PGP_Generator::CreateTerrain(AllCubes);
+
 
     std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << endl;
     std::cout << "\nRUNNING..." << endl;

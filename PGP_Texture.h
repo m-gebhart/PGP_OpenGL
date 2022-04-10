@@ -15,11 +15,11 @@ private:
 	int bpp;
 
 	static GLuint textureArray[];
-
 	unsigned char* dataBuffer;
 
 public:
 	PGP_Texture(const char* pathToFile, int new_textureID);
+	static unsigned char* LoadTextureData(const char* pathToFile, int& width, int& height, int& bpp);
 	void InitTexture();
 	void ActivateTexture(int slot);
 	void DeactivateTextures();

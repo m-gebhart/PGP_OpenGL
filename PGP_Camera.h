@@ -12,13 +12,14 @@
 class PGP_Camera {
 public:
 	static float camSpeed;
+	glm::vec3 cameraPos;
+
 private: 
 	glm::mat4 projection;
 	glm::mat4 view;
 	glm::mat4 model;
 
 	int fov, width, height;
-	glm::vec3 cameraPos;
 	float mouseXSensitivity = 0.35f, mouseYSensitivity = 0.2f;
 	glm::vec3 orientation;
 
@@ -29,7 +30,6 @@ public:
 	bool UpdateCameraInput(GLFWwindow* window, GLuint program);
 	void UpdateMouseInput(GLFWwindow* window, GLuint program);
 
-protected:
 	void SetView(GLuint program, glm::vec3 newCamPos, glm::vec3 newLookAtPos);
 	void SetProjection(GLuint program, int newFOV, int newWidth, int newHeight);
 	void SetModel(GLuint program, glm::mat4 newModel);

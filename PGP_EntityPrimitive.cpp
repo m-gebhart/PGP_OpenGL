@@ -73,19 +73,19 @@ PGP_Texture* Cube::SetTexture(ECubeType cubeType)
 {
 	switch (cubeType) {
 	case 0: /*ground*/
-		texture = new PGP_Texture(".\\Ressources\\tile_ground.png", cubeType);
+		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_ground.png", cubeType);
 		break;
 	case 1: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\tile_water.png", cubeType);
+		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_water.png", cubeType);
 		break;
 	case 2: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\tile_snow.png", cubeType);
+		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_snow.png", cubeType);
 		break;
 	case 3: /*ground*/
-		texture = new PGP_Texture(".\\Ressources\\tile_sand.png", cubeType);
+		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_sand.png", cubeType);
 		break;
 	case 4: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\tile_bush.png", cubeType);
+		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_bush.png", cubeType);
 		break;
 		/*TO BE CONTNUED*/
 	}

@@ -4,9 +4,14 @@
 PGP_Texture::PGP_Texture(const char* pathToFile, int new_textureID)
 	: width(16), height(16), bpp(0), textureID(new_textureID), filepath(pathToFile), dataBuffer(nullptr)
 {
-	dataBuffer = stbi_load(pathToFile, &width, &height, &bpp, 4);
+	dataBuffer = PGP_Texture::LoadTextureData(pathToFile, width, height, bpp);
 	InitTexture();
 	stbi_image_free(dataBuffer);
+}
+
+unsigned char* PGP_Texture::LoadTextureData(const char* pathToFile, int& width, int& height, int& bpp)
+{
+	return stbi_load(pathToFile, &width, &height, &bpp, 4);
 }
 
 void PGP_Texture::InitTexture()

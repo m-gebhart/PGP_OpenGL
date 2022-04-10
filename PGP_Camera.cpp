@@ -4,7 +4,7 @@ PGP_Camera::PGP_Camera(PGP_Window* gameWindow, GLuint initProgram, int initFOV, 
 {
     window = gameWindow->p_window;
     SetProjection(initProgram, initFOV, gameWindow->width, gameWindow->height);
-    SetView(initProgram, initCamPos, initCamPos + glm::vec3(0, 0, -1.f));
+    SetView(initProgram, initCamPos, initCamPos + glm::vec3(0, 0, 1.f));
     SetModel(initProgram, glm::mat4(1.0f));
 
     glfwSetCursorPos(window, width / 2, height / 2);
@@ -18,6 +18,7 @@ bool PGP_Camera::UpdateCameraInput(GLFWwindow* window, GLuint program)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
     {
         glfwSetWindowShouldClose(window, 1);
+        std::cout << std::endl << "APPLICATION CLOSED ON ESCAPE" << std::endl;
         return false;
     }
 
@@ -44,9 +45,9 @@ bool PGP_Camera::UpdateCameraInput(GLFWwindow* window, GLuint program)
     }
 
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-        camSpeed += 0.5f;
+        camSpeed += 1.5f;
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS && camSpeed >= 1.f)
-        camSpeed -= 0.5f;
+        camSpeed -= 1.5f;
 
     if (translationVector != glm::vec3(0))
         SetView(program, cameraPos + translationVector, orientation + translationVector);
