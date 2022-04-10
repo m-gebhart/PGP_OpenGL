@@ -1,9 +1,3 @@
-/*NOTE TO MYSELF: Avoid Legacy OpenGL!
-* LEGACY: glVertex*, glColor*, glNormal*, 
-matrix stack/manipulation commands (glMatrixMode, LoadIdentity, Rotatef, Translatef),
-glLight, glLightModel, glMaterial
-*/
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "PGP_EntityBase.h"

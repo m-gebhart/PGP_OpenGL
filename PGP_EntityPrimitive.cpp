@@ -93,7 +93,7 @@ PGP_Texture* Cube::SetTexture(ECubeType cubeType)
 	return texture;
 }
 
-void PGP_EPrimitive::UpdateAndDrawCubes(std::list<Cube*> cubes, GLuint textureSlot, GLuint shaderProgram)
+void PGP_EPrimitive::UpdateAndDrawCubes(std::list<Cube*> &cubes, GLuint textureSlot, GLuint shaderProgram)
 {
 	if (!cubes.empty()) 
 	{
@@ -105,53 +105,46 @@ void PGP_EPrimitive::UpdateAndDrawCubes(std::list<Cube*> cubes, GLuint textureSl
 	}
 }
 
-void PGP_EPrimitive::UpdateCubesBufferData(std::list<Cube*> cubes) 
+void PGP_EPrimitive::UpdateCubesBufferData(std::list<Cube*> &cubes) 
 {
-	/* TO-DO: Memory optimization, first create vertice data then glBufferData() before using any glBufferSubData()*/
 	GLuint vertex_buffer;
 	glGenBuffers(1, &vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, Cube::totalByteSize * cubes.size() * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+	float* verticesData = new float[80 * cubes.size()];
 	
 	unsigned int cubeCount = 0;
 	for (Cube* cube : cubes)
 	{
 		for (int vertex = 0; vertex < PGP_Primitives::Cube::totalVertexCount; vertex++)
 		{
-			float vertexPosData[4] = {
-				cube->GetVertex(vertex)->position[0],
-				cube->GetVertex(vertex)->position[1],
-				cube->GetVertex(vertex)->position[2],
-				cube->GetVertex(vertex)->position[3]
-			};
-			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize, sizeof(float) * 4, vertexPosData);
+			for (int pos = 0; pos < 4; pos++)
+			{
+				verticesData[cubeCount * Cube::totalDataSize + vertex * Vertex::totalDataSize + pos] = cube->GetVertex(vertex)->position[pos];
+			}
 
-			float vertexColData[4] = {
-				cube->GetVertex(vertex)->color[0],
-				cube->GetVertex(vertex)->color[1],
-				cube->GetVertex(vertex)->color[2],
-				cube->GetVertex(vertex)->color[3]
-			};
-			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::colorByteOffset, sizeof(float) * 4, vertexColData);
-		
-			float vertexUVData[2] = { 
-				cube->GetVertex(vertex)->uv[0],
-				cube->GetVertex(vertex)->uv[1]
-			};
-			glBufferSubData(GL_ARRAY_BUFFER, cubeCount * Cube::totalByteSize + vertex * Vertex::totalVertexByteSize + Vertex::UVByteOffset, sizeof(float) * 2, vertexUVData);
+			for (int col = 0; col < 4; col++)
+			{
+				verticesData[cubeCount * Cube::totalDataSize + vertex * Vertex::totalDataSize + Vertex::colorByteOffset + col] = cube->GetVertex(vertex)->color[col];
+			}
+			
+			for (int uv = 0; uv < 2; uv++)
+			{
+				verticesData[cubeCount * Cube::totalDataSize + vertex * Vertex::totalDataSize + Vertex::UVByteOffset + uv] = cube->GetVertex(vertex)->uv[uv];
+			}
 		}
 		cubeCount++;
 	}
-	
+	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * cubes.size() * sizeof(float), verticesData, GL_DYNAMIC_DRAW);
+
 	//0 = position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, 0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, Vertex::totalDataSizeInBytes, 0);
 	//1 = color
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, (const void*)(Vertex::colorByteOffset));
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, Vertex::totalDataSizeInBytes, (const void*)(Vertex::colorByteOffsetInBytes));
 	//2 = uv
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, Vertex::totalVertexByteSize, (const void*)(Vertex::UVByteOffset));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, Vertex::totalDataSizeInBytes, (const void*)(Vertex::UVByteOffsetInBytes));
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -172,7 +165,7 @@ GLuint cubeIndices[36] =
 	6, 3, 7
 };
 
-void PGP_EPrimitive::UpdateCubeIndicesBufferData(std::list<Cube*> cubes)
+void PGP_EPrimitive::UpdateCubeIndicesBufferData(std::list<Cube*> &cubes)
 {
 	//UpdateIndicesData
 	GLuint index_buffer;
@@ -189,9 +182,9 @@ void PGP_EPrimitive::UpdateCubeIndicesBufferData(std::list<Cube*> cubes)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * cubes.size() * sizeof(int), indices, GL_DYNAMIC_DRAW);
 }
 
-void PGP_EPrimitive::DrawAllCubes(std::list<Cube*> cubes)
+void PGP_EPrimitive::DrawAllCubes(std::list<Cube*> &cubes)
 {
-	glDrawElements(GL_TRIANGLES, 36 * cubes.size(), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, 36 * cubes.size(), GL_UNSIGNED_INT, nullptr);
 }
 
 void PGP_EPrimitiveTransform::TranslateCube(Cube* cube, glm::vec3 translationVector)

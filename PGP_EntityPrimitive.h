@@ -21,7 +21,8 @@ namespace PGP_Primitives {
 		ECubeType type = ECubeType::ground;
 		Vertex* vertices[8];
 		const static GLuint totalVertexCount = 8;
-		const static GLuint totalByteSize = 80 * sizeof(float); // totalVertexCount * totalVertexSize (10)
+		const static GLuint totalDataSize = 80; // totalVertexCount * Vertex's totalByteSize (10)
+		const static GLuint totalDataSizeInBytes = 80 * sizeof(float); 
 		PGP_Texture* texture;
 
 	private:
@@ -75,12 +76,12 @@ public:
 	/*--- PLANE ---*/
 	//TBC
 public:
-	static void UpdateAndDrawCubes(std::list<Cube*> cubes, GLuint textureSlot = 0, GLuint shaderProgram = 0);
+	static void UpdateAndDrawCubes(std::list<Cube*> &cubes, GLuint textureSlot = 0, GLuint shaderProgram = 0);
 
 private:
-	static void UpdateCubesBufferData(std::list<Cube*> cubes);
-	static void DrawAllCubes(std::list<Cube*> cubes);
-	static void UpdateCubeIndicesBufferData(std::list<Cube*> cubes);
+	static void UpdateCubesBufferData(std::list<Cube*> &cubes);
+	static void DrawAllCubes(std::list<Cube*> &cubes);
+	static void UpdateCubeIndicesBufferData(std::list<Cube*> &cubes);
 };
 
 class PGP_EPrimitiveTransform : PGP_Transform

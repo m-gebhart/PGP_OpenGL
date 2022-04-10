@@ -30,10 +30,13 @@ public:
 	glm::vec2 uv = glm::vec2(0.5f);
 	glm::vec3 offsetToPivotPoint = glm::vec3(0.f);
 
-	const static GLuint totalVertexByteSize = 10 * sizeof(float); // 10 = 4 pos + 4 col + 2 uv
+	const static GLuint totalDataSize = 10;
+	const static GLuint totalDataSizeInBytes = 10 * sizeof(float); // 10 = 4 pos + 4 col + 2 uv
 	const static GLuint positionByteOffset = 0;
-	const static GLuint colorByteOffset = 4 * sizeof(float);
-	const static GLuint UVByteOffset = 8 * sizeof(float);
+	const static GLuint colorByteOffset = 4;
+	const static GLuint colorByteOffsetInBytes = 4 * sizeof(float);
+	const static GLuint UVByteOffset = 8;
+	const static GLuint UVByteOffsetInBytes = 8 * sizeof(float);
 
 public:
 	Vertex(glm::vec4 initPosition)
