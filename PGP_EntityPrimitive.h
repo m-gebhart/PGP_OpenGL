@@ -75,13 +75,6 @@ public:
 	static Cube* CreateCube(ECubeType cubetype, glm::vec3 centerPos, float scale = 1.f, GLuint textureShaderProgram = 0);
 	/*--- PLANE ---*/
 	//TBC
-public:
-	static void UpdateAndDrawCubes(std::list<Cube*> &cubes, GLuint textureSlot = 0, GLuint shaderProgram = 0);
-
-private:
-	static void UpdateCubesBufferData(std::list<Cube*> &cubes);
-	static void DrawAllCubes(std::list<Cube*> &cubes);
-	static void UpdateCubeIndicesBufferData(std::list<Cube*> &cubes);
 };
 
 class PGP_EPrimitiveTransform : PGP_Transform

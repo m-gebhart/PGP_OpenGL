@@ -13,7 +13,7 @@ void PGP_Generator::InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyL
 void PGP_Generator::DrawAllCubes(std::vector<std::list<Cube*>> &cubeList)
 {
 	for (unsigned int i = 0; i < cubeList.size(); i++)
-		PGP_EPrimitive::UpdateAndDrawCubes(cubeList[i]);
+		PGP_Renderer::UpdateAndDrawCubes(cubeList[i]);
 }
 
 void PGP_Generator::CreateCubeAndPushToList(std::vector<std::list<Cube*>>& cubeList, ECubeType cubeType, glm::vec3 pos, float scale)
@@ -29,14 +29,14 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 	std::vector<Peak*> randPeaks;
 
 	const int boardSize = GetRandomNumber(20, 30);
-	int peakNr = GetRandomNumber(1, 2);
+	int peakNr = GetRandomNumber(1, 4);
 	int randHeight = GetRandomNumber(3, boardSize / 2);
 
 	for (int peak = 0; peak < peakNr; peak++)
 	{
 		Peak* newPeak = new Peak();
 		newPeak->position = glm::vec2(GetRandomNumber(3, boardSize), GetRandomNumber(3, boardSize));
-		newPeak->height = randHeight - GetRandomNumber(0, 3);
+		newPeak->height = randHeight - peak;
 		randPeaks.push_back(newPeak);
 
 		std::cout << randPeaks[peak]->position.x <<"; " << randPeaks[peak]->position.y << std::endl;
@@ -82,9 +82,14 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 	}
 }
 
+bool PGP_Generator::srandInit = false;
+
 int PGP_Generator::GetRandomNumber(int min, int max)
 {
-	srand(time(NULL));
+	if (!srandInit) {
+		srand(time(NULL));
+		srandInit = true;
+	}
 	return (rand() % (max - min)) + min;
 }
 
@@ -93,7 +98,7 @@ int PGP_Generator::GetDistance(glm::vec2 aPos, glm::vec2 bPos)
 	return sqrt(pow(aPos.x - bPos.x, 2) + pow(aPos.y - bPos.y, 2));
 }
 
-Peak* PGP_Generator::GetClosestPeak(std::vector<Peak*> peaks, glm::vec2 pos)
+Peak* PGP_Generator::GetClosestPeak(std::vector<Peak*> &peaks, glm::vec2 pos)
 {
 	Peak* closestPeak = peaks[0];
 	int tempDistance = GetDistance(pos, closestPeak->position);

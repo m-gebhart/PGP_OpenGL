@@ -6,6 +6,7 @@
 #include "PGP_Camera.h"
 #include "PGP_Texture.h"
 #include "PGP_Generator.h"
+#include "PGP_Renderer.h"
 #include <iostream>
 #include <string>
 #include <glm.hpp>
