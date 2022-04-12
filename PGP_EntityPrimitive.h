@@ -10,9 +10,10 @@ enum ECubeType {
 	water,  //1
 	snow, 	//2
 	sand, 	//3
-	bush 	//4
+	bush, 	//4
+	stone	//5
 };
-static const int ECubeTypeSize = 5;
+static const int ECubeTypeSize = 6;
 
 namespace PGP_Primitives {
 
@@ -34,8 +35,8 @@ namespace PGP_Primitives {
 			SetPivotPoint(centerPos);
 			type = cubeType;
 			textureProgram = textureShaderProgram;
-			texture = SetTexture(type);
-			InitializeCubeVerticesPositions(centerPos, initScale);
+			SetCubeVerticesPositions(centerPos, initScale);
+			texture = SetTextureAndUVCoords(type);
 		}
 
 		Cube(const Cube& other)
@@ -43,8 +44,8 @@ namespace PGP_Primitives {
 			SetPivotPoint(other.pivotPointPosition);
 			type = other.type;
 			textureProgram = other.textureProgram;
-			texture = SetTexture(other.type);
-			InitializeCubeVerticesPositions(other.pivotPointPosition, other.scale);
+			SetCubeVerticesPositions(other.pivotPointPosition, other.scale);
+			texture = SetTextureAndUVCoords(other.type);
 		}
 
 		void SetVertex(int vertexIndex, glm::vec4 vertexPosition, glm::vec4 vertexColor)
@@ -59,8 +60,8 @@ namespace PGP_Primitives {
 			return vertices[index];
 		}
 
-		void InitializeCubeVerticesPositions(glm::vec3 centerPos, float scale);
-		PGP_Texture* SetTexture(ECubeType cubeType);
+		void SetCubeVerticesPositions(glm::vec3 centerPos, float scale);
+		PGP_Texture* SetTextureAndUVCoords(ECubeType cubeType);
 	};
 };
 

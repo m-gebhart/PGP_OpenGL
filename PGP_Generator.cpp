@@ -10,14 +10,7 @@ void PGP_Generator::InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyL
 	}
 }
 
-void PGP_Generator::DrawAllCubes(std::vector<std::list<Cube*>> &cubeList)
-{
-	for (unsigned int i = 0; i < cubeList.size(); i++)
-		PGP_Renderer::UpdateAndDrawCubes(cubeList[i]);
-}
-
 std::map<std::tuple<int, int, int>, ECubeType> PGP_Generator::cubeDict;
-
 
 Cube* PGP_Generator::CreateCubeAndPushToList(std::vector<std::list<Cube*>>& cubeList, ECubeType cubeType, glm::vec3 pos, float scale)
 {
@@ -34,11 +27,16 @@ int PGP_Generator::terrainSize = 30;
 void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 {
 	int imageBPP;
-	noiseImgData = PGP_Texture::LoadTextureData(".\\Ressources\\Noise\\noise_1.png", noiseImgSize, noiseImgSize, imageBPP);
+	noiseImgData = PGP_Texture::LoadStaticTextureData(".\\Ressources\\Noise\\noise_1.png", noiseImgSize, noiseImgSize, imageBPP);
 
 	int noiseOffset = GetRandomNumber(0, noiseImgSize - terrainSize);
-	int terrainHeight = GetRandomNumber(10, 20);
+	int terrainHeight = GetRandomNumber(25, 35);
+	int waterLevel = terrainHeight * 0.35f;
 	int noiseSensitivity = GetRandomNumber(4, 32);
+
+	Cube* prevCube = nullptr;
+	Cube* cube = nullptr;
+
 
 	for (int x = noiseOffset; x < noiseOffset + terrainSize; x++)
 	{
@@ -47,27 +45,44 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 			glm::vec3 position = glm::vec3(x-noiseOffset, GetInterpHeightFromNoise(x, z, 0, terrainHeight, 32), z-noiseOffset);
 			ECubeType cubeType = ECubeType::ground;
 			
+			//snow if too high
 			if (position.y > terrainHeight*0.6f)
 				cubeType = ECubeType::snow;
 
-			if (position.y == waterLevel && SurroundedByWater(position))
+			//sand if water nearby
+			if (position.y == waterLevel && bSurroundedByWater(position))
 				cubeType = ECubeType::sand;
 
-			if (position.y < waterLevel) {
+			//create lake if valley
+			else if (position.y < waterLevel) 
+			{
 				cubeType = ECubeType::sand;
 				PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::water, position + glm::vec3(0, 1.f, 0));
 			}
-			PGP_Generator::CreateCubeAndPushToList(cubeList, cubeType, position);
+			cube = PGP_Generator::CreateCubeAndPushToList(cubeList, cubeType, position);
 
-
+			//add bushes randomly
 			if (cubeType == ECubeType::ground) 
 			{
 				int bushChance = GetRandomNumber(0, 100);
 				if (bushChance > 85) {
-					Cube* newBush = PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::bush, position + glm::vec3(0, 0.75f, 0), 0.3f);
+					Cube* newBush = PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::bush, position + glm::vec3(0, 0.75f, 0), 0.25f);
 					PGP_EPrimitiveTransform::RotateCube(newBush, 45, glm::vec3(0, 1.f, 0));
 				}
 			}
+
+			//fill gaps with stones
+			if (prevCube) 
+			{
+				Cube* higherCube = cube->pivotPointPosition.y > prevCube->pivotPointPosition.y ? cube : prevCube;
+				int cubeHeight = higherCube->pivotPointPosition.y;
+				while (cubeHeight - std::min(cube->pivotPointPosition.y, prevCube->pivotPointPosition.y) > 1)
+				{
+					PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::stone, glm::vec3(higherCube->pivotPointPosition.x, --cubeHeight, higherCube->pivotPointPosition.z));
+				}
+			}
+
+			prevCube = cube;
 		}
 	}
 }
@@ -90,7 +105,7 @@ int PGP_Generator::GetRandomNumber(int min, int max)
 	return (rand() % (max - min)) + min;
 }
 
-bool PGP_Generator::SurroundedByWater(glm::vec3 pos)
+bool PGP_Generator::bSurroundedByWater(glm::vec3 pos)
 {
 	for (int x = -1; x < 2; x++)
 		for (int z = -1; z < 2; z++)

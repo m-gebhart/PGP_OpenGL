@@ -29,19 +29,7 @@ Cube* PGP_EPrimitive::CreateCube(ECubeType cubeType, glm::vec3 centerPos, float 
 	return newCube;
 }
 
-float uvCoords[16] =
-{
-	1.f, 1.f, //0
-	0.f, 1.f, //1
-	0.f, 1.f, //2
-	1.f, 1.f, //3
-	1.f, 0.f, //4
-	0.f, 0.f, //5
-	0.f, 0.f, //6
-	1.f, 0.f  //7
-};
-
-void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
+void Cube::SetCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
 {
 	scale = newScale;
 
@@ -57,7 +45,7 @@ void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale =
 		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f  //7 - right bottom front
 	};
 
-	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++) 
+	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++)
 	{
 		glm::vec4 vertexPos = glm::vec4(verticesPositions[i * 4],
 			verticesPositions[i * 4 + 1],
@@ -65,29 +53,33 @@ void Cube::InitializeCubeVerticesPositions(glm::vec3 centerPos, float newScale =
 			1.0f);
 
 		vertices[i] = new Vertex(vertexPos);
-		vertices[i]->SetUV(glm::vec2(uvCoords[i*2], uvCoords[i*2+1]));
 	}
 }
 
-PGP_Texture* Cube::SetTexture(ECubeType cubeType)
+PGP_Texture* Cube::SetTextureAndUVCoords(ECubeType cubeType)
 {
-	switch (cubeType) {
-	case 0: /*ground*/
-		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_ground.png", cubeType);
-		break;
-	case 1: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_water.png", cubeType);
-		break;
-	case 2: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_snow.png", cubeType);
-		break;
-	case 3: /*ground*/
-		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_sand.png", cubeType);
-		break;
-	case 4: /*water*/
-		texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_bush.png", cubeType);
-		break;
-		/*TO BE CONTNUED*/
+	texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_library.png");
+
+	float uvCoords[16] =
+	{
+		1.f, 1.f, //0 vertex
+		0.f, 1.f, //1
+		0.f, 1.f, //2
+		1.f, 1.f, //3
+		1.f, 0.f, //4
+		0.f, 0.f, //5
+		0.f, 0.f, //6
+		1.f, 0.f  //7
+	};
+
+	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++)
+	{
+		if (uvCoords[i * 2] == 0.f)
+			uvCoords[i * 2] = cubeType*(1.f/ECubeTypeSize);
+		else if (uvCoords[i * 2] == 1.f)
+			uvCoords[i * 2] = (cubeType+1) * (1.f / ECubeTypeSize);
+
+		vertices[i]->SetUV(glm::vec2(uvCoords[i * 2], uvCoords[i * 2 + 1]));
 	}
 	return texture;
 }
@@ -142,7 +134,7 @@ void PGP_EPrimitiveTransform::RotateCube(Cube* cube, float degrees, glm::vec3 ro
 
 void PGP_EPrimitiveTransform::ScaleCube(Cube* cube, float newScale, bool bUpdateBuffer)
 {
-	cube->InitializeCubeVerticesPositions(cube->pivotPointPosition, newScale);
+	cube->SetCubeVerticesPositions(cube->pivotPointPosition, newScale);
 }
 
 /*void PGP_EntityPrimitive::CreateShapes(void)

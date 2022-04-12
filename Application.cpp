@@ -22,11 +22,12 @@ void Update(GLFWwindow* window)
     glViewport(0, 0, 1920, 1280);
 
     /* Clear */
+    glClearColor(135/255.f, 206/255.f, 235/255.f, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Render */
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    PGP_Generator::DrawAllCubes(AllCubes);
+    PGP_Renderer::UpdateAndDrawCubes(AllCubes, 0, 0);
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
@@ -50,7 +51,7 @@ int main(void)
     if (!glfwInit())
         return -1;
     std::cout << "GLFW: Initialized!" << std::endl;
-    std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
+    //std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
 
 
 
@@ -58,7 +59,7 @@ int main(void)
 
     /*Initialize Shader Program and Camera*/
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
-    PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(-5, 10, -10));
+    PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(-5, 20, -10));
 
     /*Create 2D Cube Array*/
     AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
