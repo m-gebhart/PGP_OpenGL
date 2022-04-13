@@ -11,7 +11,7 @@ enum ECubeType {
 	snow, 	//2
 	sand, 	//3
 	bush, 	//4
-	stone	//5
+	dirt	//5
 };
 static const int ECubeTypeSize = 6;
 
