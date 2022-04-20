@@ -94,6 +94,8 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 				//create lake if below water level
 				if (position.y < waterLevel) 
 				{
+					for (int posY = position.y; posY < waterLevel; posY++)
+						PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::water, glm::vec3(position.x, posY, position.z), 1.0f, false);
 					PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::water, glm::vec3(position.x, waterLevel, position.z));
 					bWriteTo2DDict = false;
 				}
