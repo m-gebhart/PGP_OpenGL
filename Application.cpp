@@ -51,8 +51,7 @@ int main(void)
     if (!glfwInit())
         return -1;
     std::cout << "GLFW: Initialized!" << std::endl;
-    //std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
-
+    std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
 
 
     window->InitGLSettings();

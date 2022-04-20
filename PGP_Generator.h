@@ -8,27 +8,47 @@
 #include <tuple>
 
 
+struct NoiseImg {
+	static int noiseImgSize;
+	static unsigned char* noiseImgData;
+	static int noiseSensitivity;
+
+	void SetImgData(unsigned char* newImgData)
+	{
+		noiseImgData = newImgData;
+	}
+
+	void SetImgSize(int newImgSize)
+	{
+		noiseImgSize = newImgSize;
+	}
+
+	void SetNoiseSensitivty(int newImgSensitivy)
+	{
+		noiseSensitivity = newImgSensitivy;
+	}
+};
+
 class PGP_Generator {
 
 public:
-	static int noiseImgSize;
 	static int terrainSize;
 	static std::map<std::pair<int, int>, std::pair<int, ECubeType>> CubeDict2D;
 
 private:
+	static NoiseImg* noiseImg;
 	static bool srandInit;
-	static unsigned char* noiseImgData;
-	
 	static int terrainHeight;
 	static int terrainGround;
 	static int waterLevel;
-	static int noiseSensitivity;
 
 public:
 	static void InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyList);
 	static void CreateTerrain(std::vector<std::list<Cube*>> &cubeList);
 
 private:
+	static unsigned char* GenerateNoiseImgData(NoiseImg* outputImg);
+
 	static Cube* CreateCubeAndPushToList(std::vector<std::list<Cube*>> &cubeList, ECubeType cubeType, glm::vec3 pos, float scale = 1.f, bool writeToDict = true);
 	static int GetRandomNumber(int min, int max);
 	static int GetInterpHeightFromNoise(int xPos, int zPos, int minHeight, int maxHeight, int noiseStep);
