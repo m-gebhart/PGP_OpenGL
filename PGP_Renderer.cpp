@@ -1,11 +1,21 @@
 #include "PGP_Renderer.h"
 
 bool PGP_Renderer::bInitialized = false;
+bool PGP_Renderer::bReset = true;
+const int cubeIndicesSize = 36;
+
 
 void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLuint textureSlot, GLuint shaderProgram)
 {
 	if (!cubes.empty())
 	{
+		/*if (!bInitialized)
+		{
+			glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * 10000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * 10000 * sizeof(int), nullptr, GL_DYNAMIC_DRAW);
+			bInitialized = true;
+		}*/
+
 		if (!bInitialized) {
 			(*cubes[0].begin())->texture->SetUniformSlot(0, "textureSampler", 0);
 			PGP_Renderer::InitCubeVerticesBufferData(cubes);
@@ -19,13 +29,8 @@ void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLui
 
 void PGP_Renderer::InitCubeVerticesBufferData(std::vector<std::list<Cube*>> &cubes)
 {
-	int totalCubes = 0;
-	for (int i = 0; i < ECubeTypeSize; i++)
-		totalCubes += cubes[i].size();
-
-	int verticesDataCount = 0;
-	for (int i = 0; i < ECubeTypeSize; i++)
-		verticesDataCount += Cube::totalDataSize * cubes[i].size();
+	CalculateTotalCubeCount(cubes);
+	int verticesDataCount = Cube::totalDataSize * PGP_Renderer::totalCubeCount;
 
 	GLuint vertex_buffer;
 	glGenBuffers(1, &vertex_buffer);
@@ -33,7 +38,8 @@ void PGP_Renderer::InitCubeVerticesBufferData(std::vector<std::list<Cube*>> &cub
 
 	std::unique_ptr<float[]> verticesData = GetVerticesData(cubes, verticesDataCount);
 
-	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * totalCubes * sizeof(float), verticesData.get(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * PGP_Renderer::totalCubeCount * sizeof(float), verticesData.get(), GL_DYNAMIC_DRAW);
+	//glBufferSubData(GL_ARRAY_BUFFER, 0, Cube::totalDataSize * PGP_Renderer::totalCubeCount * sizeof(float), verticesData.get());
 
 	//0 = position
 	glEnableVertexAttribArray(0);
@@ -81,7 +87,6 @@ std::unique_ptr<float[]> PGP_Renderer::GetVerticesData(std::vector<std::list<Cub
 	return verticesData;
 }
 
-const int cubeIndicesSize = 36;
 GLuint cubeIndices[36] =
 {
 	0, 1, 3, //top
@@ -103,10 +108,7 @@ void PGP_Renderer::InitCubeIndicesBufferData(std::vector<std::list<Cube*>>& cube
 	GLuint index_buffer;
 	glGenBuffers(1, &index_buffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
-	int totalSize = 0;
-	for (int i = 0; i < ECubeTypeSize; i++)
-		totalSize += cubes[i].size();
-	std::unique_ptr<int[]> indices = std::unique_ptr<int[]>(new int[cubeIndicesSize * totalSize]);
+	std::unique_ptr<int[]> indices = std::unique_ptr<int[]>(new int[cubeIndicesSize * PGP_Renderer::totalCubeCount]);
 	
 	unsigned int cubeCount = 0;
 	for (int i = 0; i < ECubeTypeSize; i++)
@@ -120,7 +122,8 @@ void PGP_Renderer::InitCubeIndicesBufferData(std::vector<std::list<Cube*>>& cube
 		}
 	}
 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * totalSize * sizeof(int), indices.get(), GL_DYNAMIC_DRAW);
+	//glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), indices.get());
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), indices.get(), GL_DYNAMIC_DRAW);
 }
 
 void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
@@ -130,10 +133,22 @@ void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 
 	if (check > 0) 
 	{
-		int totalSize = 0;
-		for (int i = 0; i < ECubeTypeSize; i++)
-			totalSize += cubes[i].size();
-
-		glDrawElements(GL_TRIANGLES, cubeIndicesSize * totalSize * sizeof(int), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), GL_UNSIGNED_INT, nullptr);
 	}
+}
+
+int PGP_Renderer::totalCubeCount = 0;
+
+int PGP_Renderer::CalculateTotalCubeCount(std::vector<std::list<Cube*>>& cubes)
+{
+	PGP_Renderer::totalCubeCount = 0;
+	for (int i = 0; i < ECubeTypeSize; i++)
+		PGP_Renderer::totalCubeCount += cubes[i].size();
+	return PGP_Renderer::totalCubeCount;
+}
+
+void PGP_Renderer::ClearRendering()
+{
+	bInitialized = false;
+	//bReset = true;
 }

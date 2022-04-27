@@ -38,6 +38,8 @@ public:
 private:
 	static NoiseImg* noiseImg;
 	static bool srandInit;
+	static int srandSeed;
+
 	static int terrainHeight;
 	static int terrainGround;
 	static int waterLevel;
@@ -45,6 +47,7 @@ private:
 public:
 	static void InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyList);
 	static void CreateTerrain(std::vector<std::list<Cube*>> &cubeList);
+	static void ClearTerrain(std::vector<std::list<Cube*>>& cubeList);
 
 private:
 	static unsigned char* GenerateNoiseImgData(NoiseImg* outputImg);

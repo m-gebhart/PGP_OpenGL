@@ -60,14 +60,7 @@ int main(void)
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
     PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(-5, 20, -10));
 
-    /*Create 2D Cube Array*/
-    AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
-    PGP_Generator::InitializeAllCubesList(AllCubes);
-
-    /*Procedural Generation*/
-    PGP_Generator::CreateTerrain(AllCubes);
-
-
+    bool bInitialized = false;
     std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << endl;
     std::cout << "\nRUNNING..." << endl;
 
@@ -75,6 +68,22 @@ int main(void)
     while (!glfwWindowShouldClose(window->p_window))
     {
         PGP_Time::UpdateTime();
+        if (!bInitialized && glfwGetKey(window->p_window, GLFW_KEY_G) == GLFW_PRESS)
+        {
+            /*Procedural Generation*/
+            AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
+            PGP_Generator::CreateTerrain(AllCubes);
+            bInitialized = true;
+        }
+
+        if (bInitialized && glfwGetKey(window->p_window, GLFW_KEY_R) == GLFW_PRESS)
+        {
+            /*Procedural Generation*/
+            PGP_Generator::ClearTerrain(AllCubes);
+            PGP_Renderer::ClearRendering();
+            bInitialized = false;
+        }
+
         if (camera->UpdateCameraInput(window->p_window, program)) 
         {
             Update(window->p_window);

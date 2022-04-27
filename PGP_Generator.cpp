@@ -40,12 +40,15 @@ unsigned char* PGP_Generator::GenerateNoiseImgData(NoiseImg* outputImgData)
 
 	//reading three random png noise files
 	const int pngCount = 3;
+	std::cout << "Generating with: ";
 	for (int i = 0; i < pngCount; i++)
 	{
 		int randomPNGnr = GetRandomNumber(1, 5);
+		std::cout << randomPNGnr << ", ";
 		std::string filePath = ".\\Ressources\\Noise\\noise_" + std::to_string(randomPNGnr) + ".png";
 		allTextureData.push_back(PGP_Texture::LoadStaticTextureData(filePath.c_str(), noiseImg->noiseImgSize, noiseImg->noiseImgSize, imageBPP));
 	}
+	std::cout << std::endl;
 
 	//finding average of these data
 	unsigned char* avgTextureData = *allTextureData.begin();
@@ -62,6 +65,7 @@ unsigned char* PGP_Generator::GenerateNoiseImgData(NoiseImg* outputImgData)
 
 void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 {
+	InitializeAllCubesList(cubeList);
 	noiseImg->noiseImgData = GenerateNoiseImgData(noiseImg);
 
 	int noiseOffset = GetRandomNumber(0, noiseImg->noiseImgSize - terrainSize);
@@ -141,6 +145,8 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 			prevCube = cube;
 		}
 	}
+
+	std::cout << "RANDOMTEST: " << GetRandomNumber(0, 10) << std::endl;
 }
 
 int PGP_Generator::GetInterpHeightFromNoise(int xPos, int zPos, int minHeight, int maxHeight, int noiseStep)
@@ -152,10 +158,11 @@ int PGP_Generator::GetInterpHeightFromNoise(int xPos, int zPos, int minHeight, i
 }
 
 bool PGP_Generator::srandInit = false;
+int PGP_Generator::srandSeed = 1;
 int PGP_Generator::GetRandomNumber(int min, int max)
 {
 	if (!srandInit) {
-		srand(time(NULL));
+		srand(++srandSeed);
 		srandInit = true;
 	}
 	return (rand() % (max - min)) + min;
@@ -171,4 +178,15 @@ bool PGP_Generator::bCloseToWater(glm::vec3 pos)
 				return true;
 
 	return false;
+}
+
+void PGP_Generator::ClearTerrain(std::vector<std::list<Cube*>>& cubeList)
+{
+	for (std::list<Cube*> cubeTypeList : cubeList)
+		for (Cube* cube : cubeTypeList)
+			delete(cube);
+
+	cubeList.clear();
+	//reset random seed
+	srandInit = false;
 }
