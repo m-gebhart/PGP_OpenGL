@@ -33,7 +33,7 @@ class PGP_Generator {
 
 public:
 	static int terrainSize;
-	static std::map<std::pair<int, int>, std::pair<int, ECubeType>> CubeDict2D;
+	static std::map<std::pair<int, int>, std::pair<int, ECubeType>> CubeDict2D; //save height and type for each cube on xz-plane 
 
 private:
 	static NoiseImg* noiseImg;

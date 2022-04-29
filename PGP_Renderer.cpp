@@ -4,22 +4,18 @@ bool PGP_Renderer::bInitialized = false;
 bool PGP_Renderer::bReset = true;
 const int cubeIndicesSize = 36;
 
+GLuint PGP_Renderer::vbo;
+GLuint PGP_Renderer::ibo;
 
 void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLuint textureSlot, GLuint shaderProgram)
 {
 	if (!cubes.empty())
 	{
-		/*if (!bInitialized)
+		if (!bInitialized)
 		{
-			glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * 10000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * 10000 * sizeof(int), nullptr, GL_DYNAMIC_DRAW);
-			bInitialized = true;
-		}*/
-
-		if (!bInitialized) {
 			(*cubes[0].begin())->texture->SetUniformSlot(0, "textureSampler", 0);
-			PGP_Renderer::InitCubeVerticesBufferData(cubes);
-			PGP_Renderer::InitCubeIndicesBufferData(cubes);
+			PGP_Renderer::BufferCubeVerticesData(cubes);
+			PGP_Renderer::BufferCubeIndicesData(cubes);
 			bInitialized = true;
 		}
 
@@ -27,19 +23,16 @@ void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLui
 	}
 }
 
-void PGP_Renderer::InitCubeVerticesBufferData(std::vector<std::list<Cube*>> &cubes)
+void PGP_Renderer::BufferCubeVerticesData(std::vector<std::list<Cube*>> &cubes)
 {
-	CalculateTotalCubeCount(cubes);
+	DefineTotalCubeCount(cubes);
 	int verticesDataCount = Cube::totalDataSize * PGP_Renderer::totalCubeCount;
-
-	GLuint vertex_buffer;
-	glGenBuffers(1, &vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-
 	std::unique_ptr<float[]> verticesData = GetVerticesData(cubes, verticesDataCount);
 
+	/*If first generation, allocate memory and buffer with glBufferData*/
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * PGP_Renderer::totalCubeCount * sizeof(float), verticesData.get(), GL_DYNAMIC_DRAW);
-	//glBufferSubData(GL_ARRAY_BUFFER, 0, Cube::totalDataSize * PGP_Renderer::totalCubeCount * sizeof(float), verticesData.get());
 
 	//0 = position
 	glEnableVertexAttribArray(0);
@@ -55,6 +48,7 @@ void PGP_Renderer::InitCubeVerticesBufferData(std::vector<std::list<Cube*>> &cub
 std::unique_ptr<float[]> PGP_Renderer::GetVerticesData(std::vector<std::list<Cube*>>& cubes, int verticesDataLength)
 {
 	std::unique_ptr<float[]> verticesData = std::unique_ptr<float[]>(new float[verticesDataLength]);
+
 	unsigned int cubeCount = 0;
 	for (int i = 0; i < ECubeTypeSize; i++)
 	{
@@ -103,13 +97,20 @@ GLuint cubeIndices[36] =
 	6, 3, 7
 };
 
-void PGP_Renderer::InitCubeIndicesBufferData(std::vector<std::list<Cube*>>& cubes)
+void PGP_Renderer::BufferCubeIndicesData(std::vector<std::list<Cube*>>& cubes)
 {
-	GLuint index_buffer;
-	glGenBuffers(1, &index_buffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer);
+	std::unique_ptr<int[]> indices = GetIndicesData(cubes, cubeIndicesSize * PGP_Renderer::totalCubeCount);
+
+	/*If first generation, allocate memory and buffer with glBufferData*/
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), indices.get(), GL_DYNAMIC_DRAW);
+}
+
+std::unique_ptr<int[]> PGP_Renderer::GetIndicesData(std::vector<std::list<Cube*>>& cubes, int indicesDataLength)
+{
 	std::unique_ptr<int[]> indices = std::unique_ptr<int[]>(new int[cubeIndicesSize * PGP_Renderer::totalCubeCount]);
-	
+
 	unsigned int cubeCount = 0;
 	for (int i = 0; i < ECubeTypeSize; i++)
 	{
@@ -122,8 +123,7 @@ void PGP_Renderer::InitCubeIndicesBufferData(std::vector<std::list<Cube*>>& cube
 		}
 	}
 
-	//glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), indices.get());
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), indices.get(), GL_DYNAMIC_DRAW);
+	return indices;
 }
 
 void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
@@ -139,7 +139,7 @@ void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 
 int PGP_Renderer::totalCubeCount = 0;
 
-int PGP_Renderer::CalculateTotalCubeCount(std::vector<std::list<Cube*>>& cubes)
+int PGP_Renderer::DefineTotalCubeCount(std::vector<std::list<Cube*>>& cubes)
 {
 	PGP_Renderer::totalCubeCount = 0;
 	for (int i = 0; i < ECubeTypeSize; i++)
@@ -149,6 +149,7 @@ int PGP_Renderer::CalculateTotalCubeCount(std::vector<std::list<Cube*>>& cubes)
 
 void PGP_Renderer::ClearRendering()
 {
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ibo);
 	bInitialized = false;
-	//bReset = true;
 }

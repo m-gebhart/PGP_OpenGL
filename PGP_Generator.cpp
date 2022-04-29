@@ -13,6 +13,7 @@ int PGP_Generator::terrainHeight;
 int PGP_Generator::terrainGround;
 int PGP_Generator::waterLevel;
 
+
 void PGP_Generator::InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyList)
 {
 	for (int i = 0; i < ECubeTypeSize; i++) 
@@ -40,15 +41,12 @@ unsigned char* PGP_Generator::GenerateNoiseImgData(NoiseImg* outputImgData)
 
 	//reading three random png noise files
 	const int pngCount = 3;
-	std::cout << "Generating with: ";
 	for (int i = 0; i < pngCount; i++)
 	{
 		int randomPNGnr = GetRandomNumber(1, 5);
-		std::cout << randomPNGnr << ", ";
 		std::string filePath = ".\\Ressources\\Noise\\noise_" + std::to_string(randomPNGnr) + ".png";
 		allTextureData.push_back(PGP_Texture::LoadStaticTextureData(filePath.c_str(), noiseImg->noiseImgSize, noiseImg->noiseImgSize, imageBPP));
 	}
-	std::cout << std::endl;
 
 	//finding average of these data
 	unsigned char* avgTextureData = *allTextureData.begin();
@@ -76,7 +74,6 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 
 	Cube* prevCube = nullptr;
 	Cube* cube = nullptr;
-
 
 	for (int x = noiseOffset; x < noiseOffset + terrainSize; x++)
 	{
@@ -108,16 +105,17 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 			cube = PGP_Generator::CreateCubeAndPushToList(cubeList, cubeType, position, 1.0f, bWriteTo2DDict);
 
 			//add bushes randomly
-			if (cubeType == ECubeType::ground) 
+			if (cubeType == ECubeType::ground)
 			{
 				int bushChance = GetRandomNumber(0, 100);
 				if (bushChance > 85) {
 					Cube* newBush = PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::bush, position + glm::vec3(0, 0.75f, 0), 0.25f, false);
-					PGP_EPrimitiveTransform::RotateCube(newBush, 45, glm::vec3(0, 1.f, 0));
+					if (newBush)
+						PGP_EPrimitiveTransform::RotateCube(newBush, 45, glm::vec3(0, 1.f, 0));
 				}
 			}
 
-			//fill gaps with stones
+			//fill gaps with dirt
 			if (prevCube)
 			{
 				//z axis
@@ -125,7 +123,8 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 				{
 					glm::vec3 higherCubePos = cube->pivotPointPosition.y > prevCube->pivotPointPosition.y ? cube->pivotPointPosition : prevCube->pivotPointPosition;
 					int cubeHeight = higherCubePos.y;
-					while (cubeHeight - std::min(cube->pivotPointPosition.y, prevCube->pivotPointPosition.y) > waterLevel)
+					int minHeight = std::min(cube->pivotPointPosition.y, prevCube->pivotPointPosition.y);
+					while (cubeHeight - minHeight > waterLevel)
 					{
 						PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::dirt, glm::vec3(higherCubePos.x, --cubeHeight, higherCubePos.z), 1.0f, false);
 					}
@@ -136,17 +135,17 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 				{
 					glm::vec3 higherCubePos = cube->pivotPointPosition.y > CubeDict2D[std::make_pair(x - 1, z)].first ? cube->pivotPointPosition : glm::vec3(x-1, CubeDict2D[std::make_pair(x - 1, z)].first, z);
 					int cubeHeight = higherCubePos.y;
-					while (cubeHeight - std::min((int)cube->pivotPointPosition.y, CubeDict2D[std::make_pair(x - 1, z)].first) > 1)
+					int minHeight = std::min((int)cube->pivotPointPosition.y, CubeDict2D[std::make_pair(x - 1, z)].first);
+					while (cubeHeight - minHeight > waterLevel)
 					{
 						PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::dirt, glm::vec3(higherCubePos.x, --cubeHeight, higherCubePos.z), 1.0f, false);
 					}
 				}
 			}
+
 			prevCube = cube;
 		}
 	}
-
-	std::cout << "RANDOMTEST: " << GetRandomNumber(0, 10) << std::endl;
 }
 
 int PGP_Generator::GetInterpHeightFromNoise(int xPos, int zPos, int minHeight, int maxHeight, int noiseStep)
@@ -162,7 +161,7 @@ int PGP_Generator::srandSeed = 1;
 int PGP_Generator::GetRandomNumber(int min, int max)
 {
 	if (!srandInit) {
-		srand(++srandSeed);
+		srand(time(NULL));
 		srandInit = true;
 	}
 	return (rand() % (max - min)) + min;
@@ -170,7 +169,6 @@ int PGP_Generator::GetRandomNumber(int min, int max)
 
 bool PGP_Generator::bCloseToWater(glm::vec3 pos)
 {
-
 	if (CubeDict2D[std::make_pair((int)pos.x - 1, (int)pos.z)].second == ECubeType::water
 		|| CubeDict2D[std::make_pair((int)pos.x, (int)pos.z-1)].second == ECubeType::water
 		|| GetInterpHeightFromNoise(pos.x + 1, pos.z, terrainGround, terrainHeight, noiseImg->noiseSensitivity) <= waterLevel+1
@@ -183,10 +181,9 @@ bool PGP_Generator::bCloseToWater(glm::vec3 pos)
 void PGP_Generator::ClearTerrain(std::vector<std::list<Cube*>>& cubeList)
 {
 	for (std::list<Cube*> cubeTypeList : cubeList)
-		for (Cube* cube : cubeTypeList)
+		for (Cube* cube : cubeTypeList) 
 			delete(cube);
 
 	cubeList.clear();
-	//reset random seed
-	srandInit = false;
+	CubeDict2D.erase(CubeDict2D.begin(), CubeDict2D.end());
 }
