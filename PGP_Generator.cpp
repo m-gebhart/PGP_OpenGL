@@ -13,7 +13,6 @@ int PGP_Generator::terrainHeight;
 int PGP_Generator::terrainGround;
 int PGP_Generator::waterLevel;
 
-
 void PGP_Generator::InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyList)
 {
 	for (int i = 0; i < ECubeTypeSize; i++) 

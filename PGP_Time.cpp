@@ -14,7 +14,7 @@ int PGP_Time::FPS = 30;
 void PGP_Time::StartTime()
 {
 	PGP_Time::bTicking = true;
-	PGP_Time::startTime =  PGP_Time::currentTimePoint = std::chrono::steady_clock::now();
+	PGP_Time::startTime = PGP_Time::currentTimePoint = std::chrono::steady_clock::now();
 	elapsedTime = 0.f;
 }
 

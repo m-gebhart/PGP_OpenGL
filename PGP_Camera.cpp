@@ -4,14 +4,14 @@ PGP_Camera::PGP_Camera(PGP_Window* gameWindow, GLuint initProgram, int initFOV, 
 {
     window = gameWindow->p_window;
     SetProjection(initProgram, initFOV, gameWindow->width, gameWindow->height);
-    SetView(initProgram, initCamPos, initCamPos + glm::vec3(0, 0, 1.f));
+    SetView(initProgram, initCamPos, initCamPos + glm::vec3(-1, 0, 1));
     SetModel(initProgram, glm::mat4(1.0f));
 
     glfwSetCursorPos(window, width / 2, height / 2);
    // glm::mat4 mvp = projection * view * model;
 }
 
-float PGP_Camera::camSpeed = 1.f;
+float PGP_Camera::camSpeed = 5.f;
 
 bool PGP_Camera::UpdateCameraInput(GLFWwindow* window, GLuint program)
 {
@@ -76,7 +76,7 @@ void PGP_Camera::SetProjection(GLuint program, int newFOV, int newWidth, int new
     width = newWidth;
     height = newHeight;
 	GLuint ProjectionID = glGetUniformLocation(program, "P");
-	projection = glm::perspective(glm::radians((float)fov), (float)(width / height), 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians((float)fov), (float)(width / height), 0.1f, 300.0f);
 	glUniformMatrix4fv(ProjectionID, 1, GL_FALSE, &projection[0][0]);
 }
 

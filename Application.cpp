@@ -36,6 +36,18 @@ void Update(GLFWwindow* window)
     glfwPollEvents();
 }
 
+void GenerateTerrain()
+{
+    AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
+    PGP_Generator::CreateTerrain(AllCubes);
+    PGP_Renderer::StartDrawAnimation();
+}
+
+void ResetTerrain()
+{
+    PGP_Renderer::StartClearAnimation();
+}
+
 int main(void)
 {
     std::chrono::time_point<std::chrono::steady_clock> initTimePoint = std::chrono::steady_clock::now();
@@ -68,26 +80,29 @@ int main(void)
     while (!glfwWindowShouldClose(window->p_window))
     {
         PGP_Time::UpdateTime();
-        if (!bGenerated && glfwGetKey(window->p_window, GLFW_KEY_G) == GLFW_PRESS)
+
+        if (!bGenerated && glfwGetKey(window->p_window, GLFW_KEY_G) == GLFW_PRESS && PGP_Renderer::GetAnimState() != AnimationState::spawn)
         {
-            /*Procedural Generation*/
-            AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
-            PGP_Generator::CreateTerrain(AllCubes);
+            GenerateTerrain();
             bGenerated = true;
         }
 
-        if (bGenerated && glfwGetKey(window->p_window, GLFW_KEY_R) == GLFW_PRESS)
+        if (bGenerated)
         {
-            /*Reset Generated Data*/
-            PGP_Renderer::ClearRendering();
-            PGP_Generator::ClearTerrain(AllCubes);
-            bGenerated = false;
+            if (glfwGetKey(window->p_window, GLFW_KEY_R) == GLFW_PRESS && PGP_Renderer::GetAnimState() != AnimationState::clear)
+                ResetTerrain();
+
+            /*if clear animation comlete*/
+            if (PGP_Renderer::totalCubeCount == 0 && PGP_Renderer::GetAnimState() == AnimationState::idle && !AllCubes.empty())
+            {
+                PGP_Generator::ClearTerrain(AllCubes);
+                bGenerated = false;
+            }
         }
 
         if (camera->UpdateCameraInput(window->p_window, program)) 
-        {
             Update(window->p_window);
-        }
+
         PGP_Time::SleepUntilFrameEnd();
     }
     /*Close Application*/

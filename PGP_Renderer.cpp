@@ -7,15 +7,20 @@ const int cubeIndicesSize = 36;
 GLuint PGP_Renderer::vbo;
 GLuint PGP_Renderer::ibo;
 
+int PGP_Renderer::cubesToDraw = 0;
+AnimationState PGP_Renderer::animState = AnimationState::idle;
+float PGP_Renderer::animTimer = 0;
+
 void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLuint textureSlot, GLuint shaderProgram)
 {
 	if (!cubes.empty())
 	{
+		/*Generating new Terrain*/
 		if (!bInitialized)
 		{
 			(*cubes[0].begin())->texture->SetUniformSlot(0, "textureSampler", 0);
 			PGP_Renderer::BufferCubeVerticesData(cubes);
-			PGP_Renderer::BufferCubeIndicesData(cubes);
+			PGP_Renderer::InitCubeIndicesData(cubes);
 			bInitialized = true;
 		}
 
@@ -25,11 +30,10 @@ void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLui
 
 void PGP_Renderer::BufferCubeVerticesData(std::vector<std::list<Cube*>> &cubes)
 {
-	DefineTotalCubeCount(cubes);
+	CalculateTotalCubeCount(cubes);
 	int verticesDataCount = Cube::totalDataSize * PGP_Renderer::totalCubeCount;
 	std::unique_ptr<float[]> verticesData = GetVerticesData(cubes, verticesDataCount);
 
-	/*If first generation, allocate memory and buffer with glBufferData*/
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * PGP_Renderer::totalCubeCount * sizeof(float), verticesData.get(), GL_DYNAMIC_DRAW);
@@ -97,14 +101,13 @@ GLuint cubeIndices[36] =
 	6, 3, 7
 };
 
-void PGP_Renderer::BufferCubeIndicesData(std::vector<std::list<Cube*>>& cubes)
+void PGP_Renderer::InitCubeIndicesData(std::vector<std::list<Cube*>>& cubes)
 {
-	std::unique_ptr<int[]> indices = GetIndicesData(cubes, cubeIndicesSize * PGP_Renderer::totalCubeCount);
+	std::unique_ptr<int[]> renderIndices = GetIndicesData(cubes, cubeIndicesSize * PGP_Renderer::totalCubeCount);
 
-	/*If first generation, allocate memory and buffer with glBufferData*/
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), indices.get(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), renderIndices.get(), GL_DYNAMIC_DRAW);
 }
 
 std::unique_ptr<int[]> PGP_Renderer::GetIndicesData(std::vector<std::list<Cube*>>& cubes, int indicesDataLength)
@@ -128,18 +131,46 @@ std::unique_ptr<int[]> PGP_Renderer::GetIndicesData(std::vector<std::list<Cube*>
 
 void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 {
-	int check;
-	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &check);
+	int isValid;
+	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &isValid);
 
-	if (check > 0) 
+	if (isValid > 0) 
 	{
-		glDrawElements(GL_TRIANGLES, cubeIndicesSize * PGP_Renderer::totalCubeCount * sizeof(int), GL_UNSIGNED_INT, nullptr);
+		if (animState == AnimationState::spawn) 
+		{
+			if (animTimer > 0)
+			{
+				animTimer -= PGP_Time::deltaTime;
+				cubesToDraw = totalCubeCount - totalCubeCount * (animTimer/spawnAnimTime);
+			}
+			else
+				animState = AnimationState::idle;
+		}
+		else if (animState == AnimationState::clear)
+		{
+			if (animTimer > 0)
+			{
+				animTimer -= PGP_Time::deltaTime;
+				cubesToDraw = std::min(cubesToDraw, totalCubeCount) * (animTimer/clearAnimTime);
+			}
+			else 
+			{
+				animState = AnimationState::idle;
+				ClearRendering();
+			}
+		}
+		else
+			cubesToDraw = totalCubeCount;
+
+		glm::clamp(cubesToDraw, 0, totalCubeCount);
+
+		glDrawElements(GL_TRIANGLES, cubeIndicesSize * cubesToDraw * sizeof(int), GL_UNSIGNED_INT, nullptr);
 	}
 }
 
 int PGP_Renderer::totalCubeCount = 0;
 
-int PGP_Renderer::DefineTotalCubeCount(std::vector<std::list<Cube*>>& cubes)
+int PGP_Renderer::CalculateTotalCubeCount(std::vector<std::list<Cube*>>& cubes)
 {
 	PGP_Renderer::totalCubeCount = 0;
 	for (int i = 0; i < ECubeTypeSize; i++)
@@ -152,4 +183,17 @@ void PGP_Renderer::ClearRendering()
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ibo);
 	bInitialized = false;
+	PGP_Renderer::totalCubeCount = 0;
+}
+
+void PGP_Renderer::StartDrawAnimation()
+{
+	animTimer = spawnAnimTime;
+	animState = AnimationState::spawn;
+}
+
+void PGP_Renderer::StartClearAnimation()
+{
+	animTimer = clearAnimTime;
+	animState = AnimationState::clear;
 }
