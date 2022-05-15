@@ -30,6 +30,7 @@ void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLui
 
 void PGP_Renderer::BufferCubeVerticesData(std::vector<std::list<Cube*>> &cubes)
 {
+	DisableSurroundedCubes();
 	CalculateTotalCubeCount(cubes);
 	int verticesDataCount = Cube::totalDataSize * PGP_Renderer::totalCubeCount;
 	std::unique_ptr<float[]> verticesData = GetVerticesData(cubes, verticesDataCount);
@@ -59,6 +60,9 @@ std::unique_ptr<float[]> PGP_Renderer::GetVerticesData(std::vector<std::list<Cub
 		std::list<Cube*> cubesOfType = cubes[i];
 		for (Cube* cube : cubesOfType)
 		{
+			if (!cube->bShouldRender)
+				continue;
+
 			for (int vertex = 0; vertex < PGP_Primitives::Cube::totalVertexCount; vertex++)
 			{
 				//load position from vertex
@@ -120,6 +124,8 @@ std::unique_ptr<int[]> PGP_Renderer::GetIndicesData(std::vector<std::list<Cube*>
 		std::list<Cube*> cubesOfType = cubes[i];
 		for (Cube* cube : cubesOfType)
 		{
+			if (!cube->bShouldRender)
+				continue;
 			for (int index = 0; index < cubeIndicesSize; index++)
 				indices[cubeIndicesSize * cubeCount + index] = cubeIndices[index] + cubeCount * PGP_Primitives::Cube::totalVertexCount;
 			cubeCount++;
@@ -173,8 +179,11 @@ int PGP_Renderer::totalCubeCount = 0;
 int PGP_Renderer::CalculateTotalCubeCount(std::vector<std::list<Cube*>>& cubes)
 {
 	PGP_Renderer::totalCubeCount = 0;
-	for (int i = 0; i < ECubeTypeSize; i++)
-		PGP_Renderer::totalCubeCount += cubes[i].size();
+	for (int i = 0; i < cubes.size(); i++)
+		for(Cube* cube : cubes[i])
+			if (cube->bShouldRender)
+				totalCubeCount++;
+
 	return PGP_Renderer::totalCubeCount;
 }
 
@@ -196,4 +205,20 @@ void PGP_Renderer::StartClearAnimation()
 {
 	animTimer = clearAnimTime;
 	animState = AnimationState::clear;
+}
+
+void PGP_Renderer::DisableSurroundedCubes()
+{
+	std::map<std::tuple<int, int, int>, Cube*>::iterator it = PGP_Generator::CubeDict.begin();
+	for(it; it != PGP_Generator::CubeDict.end(); it++)
+	{
+		glm::vec3 position = it->second->pivotPointPosition;
+		if (PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y, position.z)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x + 1, position.y, position.z)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y - 1, position.z)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y + 1, position.z)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y, position.z - 1)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y, position.z + 1)) > 0)
+				it->second->bShouldRender = false;
+	}
 }

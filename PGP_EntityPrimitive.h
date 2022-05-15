@@ -30,7 +30,7 @@ namespace PGP_Primitives {
 		GLuint textureProgram;
 
 	public:
-		Cube(glm::vec3 centerPos, float initScale, ECubeType cubeType, GLuint textureShaderProgram)
+		Cube(glm::vec3 centerPos, float initScale, ECubeType cubeType, GLuint textureShaderProgram) : Entity()
 		{
 			SetPivotPoint(centerPos);
 			type = cubeType;

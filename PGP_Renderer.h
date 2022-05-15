@@ -1,10 +1,12 @@
 #pragma once
 #include <list>
 #include <map>
+#include <tuple>
 #include <chrono>
 #include <gl/glew.h>
 #include "PGP_EntityPrimitive.h"
 #include "PGP_Time.h"
+#include "PGP_Generator.h"
 
 enum AnimationState {spawn, idle, clear};
 
@@ -26,6 +28,7 @@ private:
 	static std::unique_ptr<int[]> GetIndicesData(std::vector<std::list<Cube*>>& cubes, int indicesDataLength);
 
 	static int CalculateTotalCubeCount(std::vector<std::list<Cube*>>& cubes);
+	static void DisableSurroundedCubes(void);
 
 public:
 	static int totalCubeCount;

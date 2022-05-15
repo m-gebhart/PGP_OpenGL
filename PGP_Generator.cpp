@@ -1,5 +1,4 @@
 #include "PGP_Generator.h"
-#include <iostream>
 
 /*struct NoiseImg*/
 int NoiseImg::noiseImgSize = 16;
@@ -22,14 +21,16 @@ void PGP_Generator::InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyL
 	}
 }
 
-std::map<std::pair<int, int>, std::pair<int, ECubeType>> PGP_Generator::CubeDict2D;
+std::map<std::pair<int, int>, std::pair<int, ECubeType>> PGP_Generator::PerlinDict2D;
+std::map<std::tuple<int, int, int>, Cube*> PGP_Generator::CubeDict;
 
-Cube* PGP_Generator::CreateCubeAndPushToList(std::vector<std::list<Cube*>>& cubeList, ECubeType cubeType, glm::vec3 pos, float scale, bool writeToDict)
+Cube* PGP_Generator::CreateCubeAndPushToList(std::vector<std::list<Cube*>>& cubeList, ECubeType cubeType, glm::vec3 pos, float scale, bool writeTo2DDict)
 {
 	Cube* newCube = PGP_EPrimitive::CreateCube(cubeType, pos, scale);
 	cubeList[cubeType].push_back(newCube);
-	if (writeToDict)
-		CubeDict2D[std::make_pair((int)pos.x, (int)pos.z)] = std::make_pair((int)pos.y, cubeType);
+	if (writeTo2DDict)
+		PerlinDict2D[std::make_pair(pos.x, pos.z)] = std::make_pair(pos.y, cubeType);
+	CubeDict[std::make_tuple(pos.x, pos.y, pos.z)] = newCube;
 	return newCube;
 }
 
@@ -130,11 +131,11 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 				}
 
 				//x axis
-				if (cube->pivotPointPosition.y != CubeDict2D[std::make_pair(x-1, z)].first)
+				if (cube->pivotPointPosition.y != PerlinDict2D[std::make_pair(x-1, z)].first)
 				{
-					glm::vec3 higherCubePos = cube->pivotPointPosition.y > CubeDict2D[std::make_pair(x - 1, z)].first ? cube->pivotPointPosition : glm::vec3(x-1, CubeDict2D[std::make_pair(x - 1, z)].first, z);
+					glm::vec3 higherCubePos = cube->pivotPointPosition.y > PerlinDict2D[std::make_pair(x - 1, z)].first ? cube->pivotPointPosition : glm::vec3(x-1, PerlinDict2D[std::make_pair(x - 1, z)].first, z);
 					int cubeHeight = higherCubePos.y;
-					int minHeight = std::min((int)cube->pivotPointPosition.y, CubeDict2D[std::make_pair(x - 1, z)].first);
+					int minHeight = std::min((int)cube->pivotPointPosition.y, PerlinDict2D[std::make_pair(x - 1, z)].first);
 					while (cubeHeight - minHeight > waterLevel)
 					{
 						PGP_Generator::CreateCubeAndPushToList(cubeList, ECubeType::dirt, glm::vec3(higherCubePos.x, --cubeHeight, higherCubePos.z), 1.0f, false);
@@ -168,8 +169,8 @@ int PGP_Generator::GetRandomNumber(int min, int max)
 
 bool PGP_Generator::bCloseToWater(glm::vec3 pos)
 {
-	if (CubeDict2D[std::make_pair((int)pos.x - 1, (int)pos.z)].second == ECubeType::water
-		|| CubeDict2D[std::make_pair((int)pos.x, (int)pos.z-1)].second == ECubeType::water
+	if (PerlinDict2D[std::make_pair((int)pos.x - 1, (int)pos.z)].second == ECubeType::water
+		|| PerlinDict2D[std::make_pair((int)pos.x, (int)pos.z-1)].second == ECubeType::water
 		|| GetInterpHeightFromNoise(pos.x + 1, pos.z, terrainGround, terrainHeight, noiseImg->noiseSensitivity) <= waterLevel+1
 		|| GetInterpHeightFromNoise(pos.x, pos.z+1, terrainGround, terrainHeight, noiseImg->noiseSensitivity) <= waterLevel+1)
 				return true;
@@ -184,5 +185,6 @@ void PGP_Generator::ClearTerrain(std::vector<std::list<Cube*>>& cubeList)
 			delete(cube);
 
 	cubeList.clear();
-	CubeDict2D.erase(CubeDict2D.begin(), CubeDict2D.end());
+	PerlinDict2D.erase(PerlinDict2D.begin(), PerlinDict2D.end());
+	CubeDict.erase(CubeDict.begin(), CubeDict.end());
 }

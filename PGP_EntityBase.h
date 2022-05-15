@@ -11,8 +11,9 @@ struct Entity {
 	glm::vec3 pivotPointPosition;
 	float scale;
 	int entityID;
+	bool bShouldRender;
 
-	Entity() : scale(1.f), pivotPointPosition(glm::vec3(0.f))
+	Entity() : scale(1.f), pivotPointPosition(glm::vec3(0.f)), bShouldRender(true)
 	{
 		entityID = entityCounter++;
 	}
@@ -20,6 +21,11 @@ struct Entity {
 	void SetPivotPoint(glm::vec3 newPivotPos)
 	{
 		pivotPointPosition = newPivotPos;
+	}
+
+	void SetVisibility(bool bRender)
+	{
+		bShouldRender = bRender;
 	}
 };
 
