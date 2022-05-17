@@ -21,8 +21,8 @@ void PGP_Generator::InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyL
 	}
 }
 
-std::map<std::pair<int, int>, std::pair<int, ECubeType>> PGP_Generator::PerlinDict2D;
-std::map<std::tuple<int, int, int>, Cube*> PGP_Generator::CubeDict;
+std::unordered_map<std::pair<int, int>, std::pair<int, ECubeType>, custom_hash> PGP_Generator::PerlinDict2D;
+std::unordered_map<std::tuple<int, int, int>, Cube*, custom_hash> PGP_Generator::CubeDict;
 
 Cube* PGP_Generator::CreateCubeAndPushToList(std::vector<std::list<Cube*>>& cubeList, ECubeType cubeType, glm::vec3 pos, float scale, bool writeTo2DDict)
 {

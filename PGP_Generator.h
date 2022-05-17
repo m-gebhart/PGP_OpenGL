@@ -4,8 +4,9 @@
 #include <time.h>
 #include "PGP_EntityPrimitive.h"
 #include <random>
-#include <map>
+#include <unordered_map>
 #include <tuple>
+#include <utility>
 
 
 struct NoiseImg {
@@ -29,12 +30,25 @@ struct NoiseImg {
 	}
 };
 
+struct custom_hash //neded to use pairs and tuples as keys in unordered_map
+{
+	template <class T1, class T2>
+	std::size_t operator() (const std::pair<T1, T2>& pair) const {
+		return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+	}
+
+	template <class T1, class T2, class T3>
+	std::size_t operator() (const std::tuple<T1, T2, T3>& tuple) const {
+		return std::hash<T1>()(std::get<0>(tuple)) ^ std::hash<T2>()(std::get<1>(tuple)) ^ std::hash<T3>()(std::get<2>(tuple));
+	}
+};
+
 class PGP_Generator {
 
 public:
 	static int terrainSize;
-	static std::map<std::pair<int, int>, std::pair<int, ECubeType>> PerlinDict2D; //save height and type for each perlin-generated cube on xz-plane 
-	static std::map<std::tuple<int, int, int>, Cube*> CubeDict; //cube of xyz-pos 
+	static std::unordered_map<std::pair<int, int>, std::pair<int, ECubeType>, custom_hash> PerlinDict2D; //save height and type for each perlin-generated cube on xz-plane 
+	static std::unordered_map<std::tuple<int, int, int>, Cube*, custom_hash> CubeDict; //cube of xyz-pos 
 
 
 private:

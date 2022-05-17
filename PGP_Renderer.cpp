@@ -209,7 +209,7 @@ void PGP_Renderer::StartClearAnimation()
 
 void PGP_Renderer::DisableSurroundedCubes()
 {
-	std::map<std::tuple<int, int, int>, Cube*>::iterator it = PGP_Generator::CubeDict.begin();
+	auto it = PGP_Generator::CubeDict.begin();
 	for(it; it != PGP_Generator::CubeDict.end(); it++)
 	{
 		glm::vec3 position = it->second->pivotPointPosition;

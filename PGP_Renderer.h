@@ -1,7 +1,8 @@
 #pragma once
 #include <list>
-#include <map>
+#include <unordered_map>
 #include <tuple>
+#include <utility>
 #include <chrono>
 #include <gl/glew.h>
 #include "PGP_EntityPrimitive.h"
@@ -18,7 +19,7 @@ public:
 	static void StartDrawAnimation(void);
 	static void StartClearAnimation(void);
 
-	static AnimationState GetAnimState(void) { return animState; };
+	inline static AnimationState GetAnimState(void) { return animState; };
 
 private:
 	static void DrawCubes(std::vector<std::list<Cube*>> &cubes);
