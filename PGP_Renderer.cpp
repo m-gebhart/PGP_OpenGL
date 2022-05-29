@@ -19,25 +19,24 @@ void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLui
 		if (!bInitialized)
 		{
 			(*cubes[0].begin())->texture->SetUniformSlot(0, "textureSampler", 0);
-			PGP_Renderer::BufferCubeVerticesData(cubes);
-			PGP_Renderer::InitCubeIndicesData(cubes);
+			InitCubeVerticesData(cubes);
+			InitCubeIndicesData(cubes);
 			bInitialized = true;
 		}
 
-		PGP_Renderer::DrawCubes(cubes);
+		DrawCubes(cubes);
 	}
 }
 
-void PGP_Renderer::BufferCubeVerticesData(std::vector<std::list<Cube*>> &cubes)
+void PGP_Renderer::InitCubeVerticesData(std::vector<std::list<Cube*>> &cubes)
 {
 	DisableSurroundedCubes();
 	CalculateTotalCubeCount(cubes);
-	int verticesDataCount = Cube::totalDataSize * PGP_Renderer::totalCubeCount;
-	std::unique_ptr<float[]> verticesData = GetVerticesData(cubes, verticesDataCount);
 
+	//load empty buffer data to fill in later
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * PGP_Renderer::totalCubeCount * sizeof(float), verticesData.get(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, Cube::totalDataSize * PGP_Renderer::totalCubeCount * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 
 	//0 = position
 	glEnableVertexAttribArray(0);
@@ -50,7 +49,16 @@ void PGP_Renderer::BufferCubeVerticesData(std::vector<std::list<Cube*>> &cubes)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, Vertex::totalDataSizeInBytes, (const void*)(Vertex::UVByteOffsetInBytes));
 }
 
-std::unique_ptr<float[]> PGP_Renderer::GetVerticesData(std::vector<std::list<Cube*>>& cubes, int verticesDataLength)
+void PGP_Renderer::UpdateCubeVerticesData(std::vector<std::list<Cube*>>& cubes, int cubeCount, int cubeOffset)
+{
+	int verticesDataCount = Cube::totalDataSize * cubeCount;
+	std::unique_ptr<float[]> verticesData = GetVerticesData(cubes, verticesDataCount);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferSubData(GL_ARRAY_BUFFER, cubeOffset, Cube::totalDataSize * cubeCount * sizeof(float), verticesData.get());
+}
+
+std::unique_ptr<float[]> PGP_Renderer::GetVerticesData(std::vector<std::list<Cube*>>& cubes, int verticesDataLength, int verticesDataOffset)
 {
 	std::unique_ptr<float[]> verticesData = std::unique_ptr<float[]>(new float[verticesDataLength]);
 
@@ -60,8 +68,17 @@ std::unique_ptr<float[]> PGP_Renderer::GetVerticesData(std::vector<std::list<Cub
 		std::list<Cube*> cubesOfType = cubes[i];
 		for (Cube* cube : cubesOfType)
 		{
+			if (cubeCount < verticesDataOffset)
+			{
+				cubeCount++;
+				continue;
+			}
+
 			if (!cube->bShouldRender)
 				continue;
+
+			if (cubeCount * Cube::totalDataSize >= verticesDataLength)
+				return verticesData;
 
 			for (int vertex = 0; vertex < PGP_Primitives::Cube::totalVertexCount; vertex++)
 			{
@@ -147,7 +164,9 @@ void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 			if (animTimer > 0)
 			{
 				animTimer -= PGP_Time::deltaTime;
-				cubesToDraw = totalCubeCount - totalCubeCount * (animTimer/spawnAnimTime);
+				int prevCubesDrawn = cubesToDraw;
+				cubesToDraw = totalCubeCount - totalCubeCount * (animTimer / spawnAnimTime);
+				UpdateCubeVerticesData(cubes, cubesToDraw);
 			}
 			else
 				animState = AnimationState::idle;
@@ -212,13 +231,14 @@ void PGP_Renderer::DisableSurroundedCubes()
 	auto it = PGP_Generator::CubeDict.begin();
 	for(it; it != PGP_Generator::CubeDict.end(); it++)
 	{
+		//set invisible if surrounded by cubes (hollow)
 		glm::vec3 position = it->second->pivotPointPosition;
 		if (PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y, position.z)) > 0
 			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x + 1, position.y, position.z)) > 0
-			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y - 1, position.z)) > 0
-			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y + 1, position.z)) > 0
-			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y, position.z - 1)) > 0
-			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x - 1, position.y, position.z + 1)) > 0)
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x, position.y - 1, position.z)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x, position.y + 1, position.z)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x, position.y, position.z - 1)) > 0
+			&& PGP_Generator::CubeDict.count(std::make_tuple(position.x, position.y, position.z + 1)) > 0)
 				it->second->bShouldRender = false;
 	}
 }

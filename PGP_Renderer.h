@@ -23,9 +23,11 @@ public:
 
 private:
 	static void DrawCubes(std::vector<std::list<Cube*>> &cubes);
-	static void BufferCubeVerticesData(std::vector<std::list<Cube*>>& cubeList);
+	static void InitCubeVerticesData(std::vector<std::list<Cube*>>& cubeList);
+	static void UpdateCubeVerticesData(std::vector<std::list<Cube*>>& cubeList, int cubeCount, int cubeOffset = 0);
 	static void InitCubeIndicesData(std::vector<std::list<Cube*>>&cubes);
-	static std::unique_ptr<float[]> GetVerticesData(std::vector<std::list<Cube*>>& cubes, int verticesDataLength);
+
+	static std::unique_ptr<float[]> GetVerticesData(std::vector<std::list<Cube*>>& cubes, int verticesDataLength, int verticesDataOffset = 0);
 	static std::unique_ptr<int[]> GetIndicesData(std::vector<std::list<Cube*>>& cubes, int indicesDataLength);
 
 	static int CalculateTotalCubeCount(std::vector<std::list<Cube*>>& cubes);
