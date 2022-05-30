@@ -9,6 +9,8 @@
 #include "PGP_Renderer.h"
 #include <iostream>
 #include <string>
+#include <thread>
+#include <mutex>
 #include <glm.hpp>
 #include <ext.hpp>
 #include <gtc/matrix_transform.hpp>
@@ -16,18 +18,23 @@
 
 /*Containing all Cubes of project*/
 std::vector<std::list<Cube*>> AllCubes;
+bool bTerrainGenerated;
+bool bProcessing;
 
 void Update(GLFWwindow* window)
 {
     glViewport(0, 0, 1920, 1280);
 
     /* Clear */
-    glClearColor(135/255.f, 206/255.f, 235/255.f, 0);
+    glClearColor(135 / 255.f, 206 / 255.f, 235 / 255.f, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Render */
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    PGP_Renderer::UpdateAndDrawCubes(AllCubes, 0, 0);
+    if (bTerrainGenerated)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        PGP_Renderer::UpdateAndDrawCubes(AllCubes);
+    }
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
@@ -36,11 +43,16 @@ void Update(GLFWwindow* window)
     glfwPollEvents();
 }
 
-void GenerateTerrain()
+void GenerateTerrain(std::vector<std::list<Cube*>>& cubeList)
 {
-    AllCubes = std::vector<std::list<Cube*>>(ECubeTypeSize);
+    mutex mtx_terrainGeneration;
+    mtx_terrainGeneration.lock();
+    cubeList = std::vector<std::list<Cube*>>(ECubeTypeSize);
     PGP_Generator::CreateTerrain(AllCubes);
     PGP_Renderer::StartDrawAnimation();
+    bProcessing = false;
+    bTerrainGenerated = true;
+    mtx_terrainGeneration.unlock();
 }
 
 void ResetTerrain()
@@ -62,43 +74,47 @@ int main(void)
     /* Initialize library */
     if (!glfwInit())
         return -1;
-    std::cout << "GLFW: Initialized!" << std::endl;
-    std::cout << "GL VERSION: " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "GLFW: Initialized!\nGL VERSION: " << glGetString(GL_VERSION) << std::endl;
 
 
     window->InitGLSettings();
 
-    /*Initialize Shader Program and Camera*/
+    /*Initialize Shader Program, Textures and Camera*/
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
+    PGP_Texture::InitTextureLibrary(".\\Ressources\\Tiles\\tile_library.png", 0);
     PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(-5, 20, -10));
 
-    bool bGenerated = false;
-    std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << endl;
-    std::cout << "\nRUNNING..." << endl;
+    bTerrainGenerated = false;
+    std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << "\n\nRUNNING..." << endl;
 
+    //Cube* movingCube = nullptr;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window->p_window))
     {
         PGP_Time::UpdateTime();
 
-        if (!bGenerated && glfwGetKey(window->p_window, GLFW_KEY_G) == GLFW_PRESS && PGP_Renderer::GetAnimState() != AnimationState::spawn)
+        if (!bTerrainGenerated && !bProcessing && glfwGetKey(window->p_window, GLFW_KEY_G) == GLFW_PRESS && PGP_Renderer::GetAnimState() != AnimationState::spawn)
         {
-            GenerateTerrain();
-            bGenerated = true;
+            std::thread thrd(GenerateTerrain, std::ref(AllCubes));
+            //GenerateTerrain();
+            bProcessing = true;
+            thrd.detach();
+           // movingCube = PGP_Generator::CreateCubeAndPushToList(AllCubes, ECubeType::sand, glm::vec3(10,10,10));
         }
-
-        if (bGenerated)
+        
+        if (bTerrainGenerated && !bProcessing)
         {
             if (glfwGetKey(window->p_window, GLFW_KEY_R) == GLFW_PRESS && PGP_Renderer::GetAnimState() != AnimationState::clear)
                 ResetTerrain();
 
-            /*if clear animation comlete*/
-            if (PGP_Renderer::totalCubeCount == 0 && PGP_Renderer::GetAnimState() == AnimationState::idle && !AllCubes.empty())
+            //if clear animation complete
+            if (PGP_Renderer::renderCubeCount == 0 && PGP_Renderer::GetAnimState() == AnimationState::idle && !AllCubes.empty())
             {
                 PGP_Generator::ClearTerrain(AllCubes);
-                bGenerated = false;
+                bTerrainGenerated = false;
             }
         }
+
 
         if (camera->UpdateCameraInput(window->p_window, program)) 
             Update(window->p_window);

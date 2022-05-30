@@ -58,7 +58,7 @@ void Cube::SetCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
 
 PGP_Texture* Cube::SetTextureAndUVCoords(ECubeType cubeType)
 {
-	texture = new PGP_Texture(".\\Ressources\\Tiles\\tile_library.png");
+	texture = new PGP_Texture();
 
 	float uvCoords[16] =
 	{

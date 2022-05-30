@@ -2,29 +2,20 @@
 #include <stb_image.cpp>
 
 unsigned char* PGP_Texture::dataBuffer;
-bool PGP_Texture::bInitialized = false;
 int PGP_Texture::width;
 int PGP_Texture::height;
 int PGP_Texture::bpp;
 
-PGP_Texture::PGP_Texture(const char* pathToFile) : filepath(pathToFile)
-{
-	if (!bInitialized)
-	{
-		dataBuffer = PGP_Texture::LoadStaticTextureData(pathToFile, width, height, bpp);
-		InitTexture(0);
-		stbi_image_free(dataBuffer);
-		bInitialized = true;
-	}
-}
 
 unsigned char* PGP_Texture::LoadStaticTextureData(const char* pathToFile, int& width, int& height, int& bpp)
 {
 	return stbi_load(pathToFile, &width, &height, &bpp, 4);
 }
 
-void PGP_Texture::InitTexture(int slot)
+void PGP_Texture::InitTexture(const char* pathToFile, int slot)
 {
+	dataBuffer = PGP_Texture::LoadStaticTextureData(pathToFile, width, height, bpp);
+
 	GLuint textureID;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
@@ -37,6 +28,8 @@ void PGP_Texture::InitTexture(int slot)
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glActiveTexture(GL_TEXTURE0 + slot);
+
+	stbi_image_free(dataBuffer);
 }
 
 void PGP_Texture::DeactivateTextures()
@@ -48,9 +41,4 @@ void PGP_Texture::SetUniformSlot(GLuint program, const char* uniformName, int sl
 {
 	GLuint textureSampler = glGetUniformLocation(program, uniformName);
 	glUniform1i(textureSampler, slot);
-}
-
-PGP_Texture::~PGP_Texture()
-{
-	//glDeleteTextures(1, &textureID);
 }
