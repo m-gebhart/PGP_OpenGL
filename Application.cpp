@@ -82,12 +82,12 @@ int main(void)
     /*Initialize Shader Program, Textures and Camera*/
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();
     PGP_Texture::InitTextureLibrary(".\\Ressources\\Tiles\\tile_library.png", 0);
-    PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(-5, 20, -10));
+    PGP_Camera* camera = new PGP_Camera(window, program, 45, glm::vec3(PGP_Generator::terrainSize/2, 25, PGP_Generator::terrainSize+5));
 
     bTerrainGenerated = false;
-    std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << "\n\nRUNNING..." << endl;
+    std::cout << "Loaded after: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - initTimePoint).count() << "s" << "\n\nRUNNING..." << std::endl;
+    std::cout << "Press:\n -G to Generate\n -R to Reset\n -Esc to Escape" << std::endl;
 
-    //Cube* movingCube = nullptr;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window->p_window))
     {
@@ -96,10 +96,8 @@ int main(void)
         if (!bTerrainGenerated && !bProcessing && glfwGetKey(window->p_window, GLFW_KEY_G) == GLFW_PRESS && PGP_Renderer::GetAnimState() != AnimationState::spawn)
         {
             std::thread thrd(GenerateTerrain, std::ref(AllCubes));
-            //GenerateTerrain();
             bProcessing = true;
             thrd.detach();
-           // movingCube = PGP_Generator::CreateCubeAndPushToList(AllCubes, ECubeType::sand, glm::vec3(10,10,10));
         }
         
         if (bTerrainGenerated && !bProcessing)
@@ -108,13 +106,12 @@ int main(void)
                 ResetTerrain();
 
             //if clear animation complete
-            if (PGP_Renderer::renderCubeCount == 0 && PGP_Renderer::GetAnimState() == AnimationState::idle && !AllCubes.empty())
+            if (PGP_Renderer::drawnCubeCount == 0 && PGP_Renderer::GetAnimState() == AnimationState::idle && !AllCubes.empty())
             {
                 PGP_Generator::ClearTerrain(AllCubes);
                 bTerrainGenerated = false;
             }
         }
-
 
         if (camera->UpdateCameraInput(window->p_window, program)) 
             Update(window->p_window);

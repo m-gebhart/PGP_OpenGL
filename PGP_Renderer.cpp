@@ -8,7 +8,7 @@ const int cubeIndicesSize = 36;
 GLuint PGP_Renderer::vbo;
 GLuint PGP_Renderer::ibo;
 
-int PGP_Renderer::cubesToDraw = 0;
+int PGP_Renderer::drawnCubeCount = 0;
 AnimationState PGP_Renderer::animState = AnimationState::idle;
 float PGP_Renderer::animTimer = 0;
 
@@ -189,18 +189,18 @@ void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 			if (animTimer > 0)
 			{
 				animTimer -= PGP_Time::deltaTime;
-				cubesToDraw = PGP_Renderer::renderCubeCount - PGP_Renderer::renderCubeCount * (animTimer / spawnAnimTime);
-				UpdateVerticesBuffer(verticesData, cubesToDraw);
+				drawnCubeCount = PGP_Renderer::renderCubeCount - PGP_Renderer::renderCubeCount * (animTimer / spawnAnimTime);
+				UpdateVerticesBuffer(verticesData, drawnCubeCount);
 			}
 			else
 				animState = AnimationState::idle;
 		}
 		else if (animState == AnimationState::clear)
 		{
-			if (animTimer > 0)
+			if (animTimer > 0 && drawnCubeCount > 0)
 			{
 				animTimer -= PGP_Time::deltaTime;
-				cubesToDraw = std::min(cubesToDraw, renderCubeCount) * (animTimer / clearAnimTime);
+				drawnCubeCount = std::min(drawnCubeCount, renderCubeCount) * (animTimer / clearAnimTime);
 			}
 			else
 			{
@@ -209,11 +209,11 @@ void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 			}
 		}
 		else
-			cubesToDraw = renderCubeCount;
+			drawnCubeCount = renderCubeCount;
 
-		glm::clamp(cubesToDraw, 0, renderCubeCount);
+		glm::clamp(drawnCubeCount, 0, renderCubeCount);
 
-		glDrawElements(GL_TRIANGLES, cubeIndicesSize * cubesToDraw * sizeof(int), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, cubeIndicesSize * drawnCubeCount * sizeof(int), GL_UNSIGNED_INT, nullptr);
 	}
 }
 
@@ -228,7 +228,7 @@ void PGP_Renderer::ClearRendering()
 
 void PGP_Renderer::StartDrawAnimation()
 {
-	cubesToDraw = PGP_Generator::CubeDict.size()-1;
+	drawnCubeCount = PGP_Generator::CubeDict.size()-1;
 	animTimer = spawnAnimTime;
 	animState = AnimationState::spawn;
 }
@@ -241,8 +241,7 @@ void PGP_Renderer::StartClearAnimation()
 
 void PGP_Renderer::DisableSurroundedCubes()
 {
-	//only cubes of type Dirt (ID: 5) can be fully surrounded, thus hollow
-	auto it = PGP_Generator::CubeDict.begin();
+	std::unordered_map<std::tuple<int, int, int>, PGP_Primitives::Cube*, custom_hash>::iterator it = PGP_Generator::CubeDict.begin();
 	for (it; it != PGP_Generator::CubeDict.end(); it++)
 	{
 		//set invisible if surrounded by cubes (hollow)

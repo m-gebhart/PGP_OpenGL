@@ -4,7 +4,7 @@ PGP_Camera::PGP_Camera(PGP_Window* gameWindow, GLuint initProgram, int initFOV, 
 {
     window = gameWindow->p_window;
     SetProjection(initProgram, initFOV, gameWindow->width, gameWindow->height);
-    SetView(initProgram, initCamPos, initCamPos + glm::vec3(-1, 0, 1));
+    SetView(initProgram, initCamPos, glm::vec3(0));
     SetModel(initProgram, glm::mat4(1.0f));
 
     glfwSetCursorPos(window, width / 2, height / 2);
@@ -67,7 +67,7 @@ void PGP_Camera::UpdateMouseInput(GLFWwindow* window, GLuint program)
     float verticalAngle = (height / 2) - (float)yPos;
     glm::mat3 verticalRotation = glm::rotate(glm::radians(verticalAngle * mouseYSensitivity), glm::vec3(1.f, 0, 0));
 
-    SetView(program, cameraPos, (horizontalRotation * verticalRotation * glm::vec3(0, 0, -1.f)) + cameraPos);
+    SetView(program, cameraPos, cameraPos + (horizontalRotation * verticalRotation * glm::vec3(0, 0, -1.f)));
 }
 
 void PGP_Camera::SetProjection(GLuint program, int newFOV, int newWidth, int newHeight)

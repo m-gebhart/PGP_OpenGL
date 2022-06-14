@@ -36,7 +36,8 @@ private:
 	static void DisableSurroundedCubes(void);
 
 public:
-	static int renderCubeCount;
+	static int renderCubeCount; //number of all cubes that should get rendered
+	static int drawnCubeCount; //for animation: number of currently rendered cubes
 
 private:
 	/*chunk data*/
@@ -51,7 +52,6 @@ private:
 	static bool bReset;
 	static bool bHollowTerrainSet;
 
-	static int cubesToDraw;
 
 	static AnimationState animState;
 	static const int spawnAnimTime = 16;
