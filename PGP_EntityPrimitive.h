@@ -20,10 +20,10 @@ namespace PGP_Primitives {
 	struct Cube : public Entity {
 	public:
 		ECubeType type = ECubeType::ground;
-		Vertex* vertices[8];
-		const static GLuint totalVertexCount = 8;
-		const static GLuint totalDataSize = 80; // totalVertexCount * Vertex's totalByteSize (10)
-		const static GLuint totalDataSizeInBytes = 80 * sizeof(float); 
+		Vertex* vertices[16];
+		const static GLuint totalVertexCount = 16;
+		const static GLuint totalDataSize = 160; // totalVertexCount * Vertex's totalByteSize (10)
+		const static GLuint totalDataSizeInBytes = 160 * sizeof(float); 
 		PGP_Texture* texture;
 
 	private:
@@ -74,8 +74,7 @@ class PGP_EPrimitive
 public:
 	/* --- CUBE ---*/
 	static Cube* CreateCube(ECubeType cubetype, glm::vec3 centerPos, float scale = 1.f, GLuint textureShaderProgram = 0);
-	/*--- PLANE ---*/
-	//TBC
+	//TBC: Other Objects
 };
 
 class PGP_EPrimitiveTransform : PGP_Transform

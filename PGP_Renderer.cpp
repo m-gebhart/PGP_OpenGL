@@ -126,14 +126,15 @@ std::unique_ptr<float[]> PGP_Renderer::GetVerticesData(std::vector<std::list<Cub
 	return tempVerticesData;
 }
 
+//triangles drawn - clockwise
 GLuint cubeIndices[36] =
 {
-	0, 1, 3, //top
-	0, 3, 2,
+	8, 9, 11, //top
+	8, 11, 10,
 	1, 0, 4, //front
 	1, 4, 5,
-	4, 6, 7, //bottom
-	4, 7, 5,
+	12, 14, 15, //bottom
+	12, 15, 13,
 	3, 1, 5, //right
 	3, 5, 7,
 	2, 6, 4, //left
