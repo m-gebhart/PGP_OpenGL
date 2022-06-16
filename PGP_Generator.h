@@ -1,12 +1,12 @@
 #pragma once
 #include <list>
 #include <vector> 
-#include <time.h>
-#include "PGP_EntityPrimitive.h"
 #include <random>
+#include <chrono>
 #include <unordered_map>
 #include <tuple>
 #include <utility>
+#include "PGP_EntityPrimitive.h"
 
 
 struct NoiseImg {
@@ -33,12 +33,14 @@ struct NoiseImg {
 struct custom_hash //neded to use pairs and tuples as keys in unordered_map
 {
 	template <class T1, class T2>
-	std::size_t operator() (const std::pair<T1, T2>& pair) const {
+	std::size_t operator() (const std::pair<T1, T2>& pair) const 
+	{
 		return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
 	}
 
 	template <class T1, class T2, class T3>
-	std::size_t operator() (const std::tuple<T1, T2, T3>& tuple) const {
+	std::size_t operator() (const std::tuple<T1, T2, T3>& tuple) const 
+	{
 		return std::hash<T1>()(std::get<0>(tuple)) ^ std::hash<T2>()(std::get<1>(tuple)) ^ std::hash<T3>()(std::get<2>(tuple));
 	}
 };
@@ -53,8 +55,6 @@ public:
 
 private:
 	static NoiseImg* noiseImg;
-	static bool srandInit;
-	static int srandSeed;
 
 	static int terrainHeight;
 	static int terrainGround;
@@ -65,10 +65,11 @@ public:
 	static void CreateTerrain(std::vector<std::list<Cube*>> &cubeList);
 	static void ClearTerrain(std::vector<std::list<Cube*>>& cubeList);
 
+	static Cube* CreateCubeAndPushToList(std::vector<std::list<Cube*>>& cubeList, ECubeType cubeType, glm::vec3 pos, float scale = 1.f, bool writeTo2DDict = true);
+
 private:
 	static unsigned char* GenerateNoiseImgData(NoiseImg* outputImg);
 
-	static Cube* CreateCubeAndPushToList(std::vector<std::list<Cube*>> &cubeList, ECubeType cubeType, glm::vec3 pos, float scale = 1.f, bool writeTo2DDict = true);
 	static int GetRandomNumber(int min, int max);
 	static int GetInterpHeightFromNoise(int xPos, int zPos, int minHeight, int maxHeight, int noiseStep);
 

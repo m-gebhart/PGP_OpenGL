@@ -39,8 +39,7 @@ unsigned char* PGP_Generator::GenerateNoiseImgData(NoiseImg* outputImgData)
 	int imageBPP;
 	std::vector<unsigned char*> allTextureData;
 
-	//reading three random png noise files
-	const int pngCount = 3;
+	const int pngCount = 3; //reading three random png noise files
 	for (int i = 0; i < pngCount; i++)
 	{
 		int randomPNGnr = GetRandomNumber(1, 5);
@@ -103,6 +102,9 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 			}
 
 			cube = PGP_Generator::CreateCubeAndPushToList(cubeList, cubeType, position, 1.0f, bWriteTo2DDict);
+			int randomRot = GetRandomNumber(0, 3);
+			if (randomRot > 0)
+				PGP_EPrimitiveTransform::RotateCube(cube, randomRot * 90.f, glm::vec3(0, 1.f, 0));
 
 			//add bushes randomly
 			if (cubeType == ECubeType::ground)
@@ -156,15 +158,12 @@ int PGP_Generator::GetInterpHeightFromNoise(int xPos, int zPos, int minHeight, i
 	return glm::mix(minHeight, maxHeight, noiseValue / 255.f);
 }
 
-bool PGP_Generator::srandInit = false;
-int PGP_Generator::srandSeed = 1;
 int PGP_Generator::GetRandomNumber(int min, int max)
 {
-	if (!srandInit) {
-		srand(time(NULL));
-		srandInit = true;
-	}
-	return (rand() % (max - min)) + min;
+	unsigned rand_seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine rand_generator(rand_seed);
+	std::uniform_int_distribution<int> rand_distribution(min, max);
+	return rand_distribution(rand_generator);
 }
 
 bool PGP_Generator::bCloseToWater(glm::vec3 pos)

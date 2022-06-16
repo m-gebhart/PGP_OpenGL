@@ -35,7 +35,7 @@ namespace PGP_Primitives {
 			SetPivotPoint(centerPos);
 			type = cubeType;
 			textureProgram = textureShaderProgram;
-			SetCubeVerticesPositions(centerPos, initScale);
+			SetCubeVerticesPositions(centerPos, true, initScale);
 			texture = SetTextureAndUVCoords(type);
 		}
 
@@ -44,7 +44,7 @@ namespace PGP_Primitives {
 			SetPivotPoint(other.pivotPointPosition);
 			type = other.type;
 			textureProgram = other.textureProgram;
-			SetCubeVerticesPositions(other.pivotPointPosition, other.scale);
+			SetCubeVerticesPositions(other.pivotPointPosition, true, other.scale);
 			texture = SetTextureAndUVCoords(other.type);
 		}
 
@@ -60,7 +60,7 @@ namespace PGP_Primitives {
 			return vertices[index];
 		}
 
-		void SetCubeVerticesPositions(glm::vec3 centerPos, float scale);
+		void SetCubeVerticesPositions(glm::vec3 centerPos, bool bCreateVertices, float scale);
 		PGP_Texture* SetTextureAndUVCoords(ECubeType cubeType);
 	};
 };
@@ -83,5 +83,5 @@ public:
 	static void TranslateCube(Cube* cube, glm::vec3 translationVector);
 	static void MoveCubeTo(Cube* cube, glm::vec3 targetPosition);
 	static void RotateCube(Cube* cube, float degrees, glm::vec3 rotAxis);
-	static void ScaleCube(Cube* cube, float newScale, bool bUpdateBuffer);
+	static void ScaleCube(Cube* cube, float newScale);
 };

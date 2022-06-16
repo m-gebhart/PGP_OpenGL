@@ -3,40 +3,43 @@
 Cube* PGP_EPrimitive::CreateCube(ECubeType cubeType, glm::vec3 centerPos, float scale, GLuint textureShaderProgram) 
 {
 	Cube* newCube = new Cube(centerPos, scale, cubeType, textureShaderProgram);
-	PGP_EPrimitiveTransform::RotateCube(newCube, 180.f, glm::vec3(1.0f, 0, 0));
+	PGP_EPrimitiveTransform::RotateCube(newCube, 180.f, glm::vec3(1.f, 0, 0));
 
 	return newCube;
 }
 
-void Cube::SetCubeVerticesPositions(glm::vec3 centerPos, float newScale = 1.f)
+void Cube::SetCubeVerticesPositions(glm::vec3 centerPos, bool bCreateVertices, float newScale = 1.f)
 {
 	scale = newScale;
 
-	float verticesPositions[32] =
+	float verticesPositions[24] =
 	{
-		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //0 - left top back
-		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //1 - right top back
-		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //2 - left top front
-		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //3 - right top front
-		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //4 - left bottom back
-		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, 1.0f, //5 - right bottom back
-		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //6 - left bottom front
-		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, 1.0f, //7 - right bottom front		
+		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, //0 - left top back
+		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z - 0.5f * scale, //1 - right top back
+		centerPos.x - 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, //2 - left top front
+		centerPos.x + 0.5f * scale, centerPos.y + 0.5f * scale, centerPos.z + 0.5f * scale, //3 - right top front
+		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, //4 - left bottom back
+		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z - 0.5f * scale, //5 - right bottom back
+		centerPos.x - 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale, //6 - left bottom front
+		centerPos.x + 0.5f * scale, centerPos.y - 0.5f * scale, centerPos.z + 0.5f * scale //7 - right bottom front		
 	};
 
 	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++)
 	{
 		//first sides, then top and bottom: 0-7 for sides, 0-3 for top, 4-7 for bottom
-		int offset = i * 4;
-		if (offset >= 32)
-			offset -= 32;
+		int offset = i * 3;
+		if (offset >= 24)
+			offset -= 24;
 
 		glm::vec4 vertexPos = glm::vec4(verticesPositions[offset],
 				verticesPositions[offset + 1],
 				verticesPositions[offset + 2],
-				verticesPositions[offset + 3]);
+				1.f);
 
-		vertices[i] = new Vertex(vertexPos);
+		if (bCreateVertices)
+			vertices[i] = new Vertex(vertexPos);
+		else
+			vertices[i]->position = vertexPos;
 	}
 }
 
@@ -128,7 +131,7 @@ void PGP_EPrimitiveTransform::RotateCube(Cube* cube, float degrees, glm::vec3 ro
 	PGP_EPrimitiveTransform::MoveCubeTo(cube, originalPosition);
 };
 
-void PGP_EPrimitiveTransform::ScaleCube(Cube* cube, float newScale, bool bUpdateBuffer)
+void PGP_EPrimitiveTransform::ScaleCube(Cube* cube, float newScale)
 {
-	cube->SetCubeVerticesPositions(cube->pivotPointPosition, newScale);
+	cube->SetCubeVerticesPositions(cube->pivotPointPosition, false, newScale);
 }
