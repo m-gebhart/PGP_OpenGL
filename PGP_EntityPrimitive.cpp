@@ -50,33 +50,33 @@ PGP_Texture* Cube::SetTextureAndUVCoords(ECubeType cubeType)
 	float uvCoords[32] =
 	{
 		//SIDES
-		1.f, 1.f, //0 (VertexNumber)
-		0.f, 1.f, //1
-		0.f, 1.f, //2
-		1.f, 1.f, //3
-		1.f, 0.f, //4
-		0.f, 0.f, //5
-		0.f, 0.f, //6
-		1.f, 0.f, //7
+		1.f, 0.66f, //0 (VertexNumber)
+		0.f, 0.66f, //1
+		0.f, 0.66f, //2
+		1.f, 0.66f, //3
+		1.f, 0.33f, //4
+		0.f, 0.33f, //5
+		0.f, 0.33f, //6
+		1.f, 0.33f, //7
 
 		//TOP
 		0.f, 1.f, //8
 		1.f, 1.f, //9
-		0.f, 0.8f, //10
-		1.f, 0.8f, //11
+		0.f, 0.66f, //10
+		1.f, 0.66f, //11
 
 		//BOTTOM
 		0.f, 0.f, //12
 		1.f, 0.f, //13
-		0.f, 0.2f, //14
-		1.f, 0.2f  //15
+		0.f, 0.33f, //14
+		1.f, 0.33f  //15
 	};
 
 
 	for (int i = 0; i < PGP_Primitives::Cube::totalVertexCount; i++)
 	{
 		//setting x coord to read from right tile from PNG tile library (sorted after cubeType)
-		uvCoords[i * 2] = (cubeType+ uvCoords[i * 2]) * (1.f / ECubeTypeSize);
+		uvCoords[i * 2] = (cubeType + uvCoords[i * 2]) * (1.f / ECubeTypeSize);
 		vertices[i]->SetUV(glm::vec2(uvCoords[i * 2], uvCoords[i * 2 + 1]));
 	}
 
