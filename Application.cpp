@@ -23,7 +23,7 @@ bool bProcessing;
 
 void Update(GLFWwindow* window)
 {
-    glViewport(0, 0, 1920, 1280);
+    glViewport(0, 0, PGP_Config::screenWidth, PGP_Config::screenHeight);
 
     /* Clear */
     glClearColor(135 / 255.f, 206 / 255.f, 235 / 255.f, 0);

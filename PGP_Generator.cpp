@@ -184,6 +184,7 @@ void PGP_Generator::ClearTerrain(std::vector<std::list<Cube*>>& cubeList)
 			delete(cube);
 
 	cubeList.clear();
-	PerlinDict2D.erase(PerlinDict2D.begin(), PerlinDict2D.end());
-	CubeDict.erase(CubeDict.begin(), CubeDict.end());
+	cubeList.shrink_to_fit();
+	PerlinDict2D.clear();
+	CubeDict.clear();
 }

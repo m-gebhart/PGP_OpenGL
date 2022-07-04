@@ -32,7 +32,6 @@ void PGP_Renderer::UpdateAndDrawCubes(std::vector<std::list<Cube*>>& cubes, GLui
 			bInitialized = true;
 
 			UpdateVerticesBuffer(verticesData, PGP_Generator::CubeDict.size());
-
 		}
 
 		DrawCubes(cubes);
@@ -222,6 +221,8 @@ void PGP_Renderer::ClearRendering()
 {
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ibo);
+	verticesData.reset();
+	indicesData.reset();
 	bInitialized = false;
 	bHollowTerrainSet = false;
 	PGP_Renderer::renderCubeCount = 0;
