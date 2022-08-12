@@ -9,6 +9,7 @@
 #include "PGP_EntityPrimitive.h"
 #include "PGP_Time.h"
 #include "PGP_Generator.h"
+#include "PGP_Config.h"
 
 enum AnimationState { spawn, idle, clear };
 
@@ -52,9 +53,7 @@ private:
 	static bool bReset;
 	static bool bHollowTerrainSet;
 
-
+	/*deoent on spawn animation times from config file*/
 	static AnimationState animState;
-	static const int spawnAnimTime = 16;
-	static const int clearAnimTime = 5;
 	static float animTimer;
 };

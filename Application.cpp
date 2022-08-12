@@ -26,7 +26,7 @@ void Update(GLFWwindow* window)
     glViewport(0, 0, PGP_Config::screenWidth, PGP_Config::screenHeight);
 
     /* Clear */
-    glClearColor(135 / 255.f, 206 / 255.f, 235 / 255.f, 0);
+    glClearColor(PGP_Config::skyBoxColor.x / 255.f, PGP_Config::skyBoxColor.y / 255.f, PGP_Config::skyBoxColor.z / 255.f, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Render */
@@ -64,9 +64,7 @@ int main(void)
 {
     std::chrono::time_point<std::chrono::steady_clock> initTimePoint = std::chrono::steady_clock::now();
 
-    std::cout << "Welcome to my Procedural Generation Project!\nPlease define the horizontal Terrain Size: ";
-    std::cin >> PGP_Generator::terrainSize;
-    std::cout << "Loading..." << std::endl;
+    std::cout << "Welcome to my Procedural Generation Project!";
 
     /* Initialize window */
     PGP_Window* window = new PGP_Window(PGP_Config::screenWidth, PGP_Config::screenHeight, "Procedural Generation");
@@ -78,6 +76,8 @@ int main(void)
 
 
     window->InitGLSettings();
+
+    PGP_Generator::terrainSize = PGP_Config::terrainSize;
 
     /*Initialize Shader Program, Textures and Camera*/
     GLuint program = PGP_ShaderProgram::CreateAndUseNewProgram();

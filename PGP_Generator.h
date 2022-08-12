@@ -7,6 +7,7 @@
 #include <tuple>
 #include <utility>
 #include "PGP_EntityPrimitive.h"
+#include "PGP_Config.h"
 
 
 struct NoiseImg {
@@ -57,7 +58,7 @@ private:
 	static NoiseImg* noiseImg;
 
 	static int terrainHeight;
-	static int terrainGround;
+	static const int terrainGround = 0;
 	static int waterLevel;
 
 public:

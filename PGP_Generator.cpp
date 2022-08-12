@@ -9,7 +9,6 @@ int NoiseImg::noiseSensitivity = 1;
 NoiseImg* PGP_Generator::noiseImg = nullptr;
 int PGP_Generator::terrainSize = 1;
 int PGP_Generator::terrainHeight;
-int PGP_Generator::terrainGround;
 int PGP_Generator::waterLevel;
 
 void PGP_Generator::InitializeAllCubesList(std::vector<std::list<Cube*>> &emptyList)
@@ -67,7 +66,6 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 
 	int noiseOffset = GetRandomNumber(0, noiseImg->noiseImgSize - terrainSize);
 	terrainHeight = GetRandomNumber(10, 35);
-	terrainGround = 0;
 	waterLevel = floor(terrainHeight * 0.4f);
 	noiseImg->noiseSensitivity = GetRandomNumber(4, 32);
 
@@ -83,7 +81,7 @@ void PGP_Generator::CreateTerrain(std::vector<std::list<Cube*>> &cubeList)
 			bool bWriteTo2DDict = true;
 			
 			//snow if too high
-			if (position.y > terrainHeight*0.6f)
+			if (PGP_Config::bGenerateSnow && position.y > terrainHeight*0.6f)
 				cubeType = ECubeType::snow;
 
 			// sand if water nearby

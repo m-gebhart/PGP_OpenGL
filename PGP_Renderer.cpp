@@ -189,7 +189,7 @@ void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 			if (animTimer > 0)
 			{
 				animTimer -= PGP_Time::deltaTime;
-				drawnCubeCount = PGP_Renderer::renderCubeCount - PGP_Renderer::renderCubeCount * (animTimer / spawnAnimTime);
+				drawnCubeCount = PGP_Renderer::renderCubeCount - PGP_Renderer::renderCubeCount * (animTimer / PGP_Config::spawnAnimTime);
 				UpdateVerticesBuffer(verticesData, drawnCubeCount);
 			}
 			else
@@ -200,7 +200,7 @@ void PGP_Renderer::DrawCubes(std::vector<std::list<Cube*>>& cubes)
 			if (animTimer > 0 && drawnCubeCount > 0)
 			{
 				animTimer -= PGP_Time::deltaTime;
-				drawnCubeCount = std::min(drawnCubeCount, renderCubeCount) * (animTimer / clearAnimTime);
+				drawnCubeCount = std::min(drawnCubeCount, renderCubeCount) * (animTimer / PGP_Config::clearAnimTime);
 			}
 			else
 			{
@@ -231,13 +231,13 @@ void PGP_Renderer::ClearRendering()
 void PGP_Renderer::StartDrawAnimation()
 {
 	drawnCubeCount = PGP_Generator::CubeDict.size()-1;
-	animTimer = spawnAnimTime;
+	animTimer = PGP_Config::spawnAnimTime;
 	animState = AnimationState::spawn;
 }
 
 void PGP_Renderer::StartClearAnimation()
 {
-	animTimer = clearAnimTime;
+	animTimer = PGP_Config::clearAnimTime;
 	animState = AnimationState::clear;
 }
 
