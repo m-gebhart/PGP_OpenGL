@@ -18,12 +18,12 @@ Project and Documentation on my <a href="https://drive.google.com/drive/folders/
 <li>In the render window, Press G to generate the landscape.</li>
 <li>Use the following <b>Controls</b> to navigate through the scene:</li>
 <ul>
-  <li><b>G</b> to generate a new landscape.</li>
+  <li><b>G</b> to generate a new landscape</li>
   <li><b>R</b> to remove the currently displayed landscape</li>
-  <li><b>Mouse</b> to control camera view.</li>
+  <li><b>Mouse</b> to control camera view</li>
   <li><b>1</b> and <b>2</b> to change camera speed</li>
 </ul>
-<li>Additionally: Project Settings can be defined in PGP_Config.h</li>
+<li>Additionally: Project Settings can be defined in PGP_Config.h.</li>
 </ol>
 
 Pls note: on the first time generation, the landscape can be loaded right behind "you".
