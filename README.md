@@ -1,4 +1,7 @@
 # PGP_OpenGL
+
+## Description
+
 This <b>Prodecural Generation Project</b> is a graphics programming project made with C++ and OpenGL. The user is able to configure settings to generate Minecraft-inspired landscapes containing multiple settings that differ in vegetation and geographical aesthetics.
 The application reads in noise visuals to then generate and render various cube-based entities each with different textures in accordance to the given vegetation. PGP was a great opportunity to dive deeper into more low-level concepts such as rendering, performance optimisation, memory management and multithreading.
 
@@ -25,6 +28,6 @@ Project and Documentation on my <a href="https://drive.google.com/drive/folders/
 
 Pls note: on the first time generation, the landscape can be loaded right behind "you".
 
-Execution in action:
+## Media
 
 ![pgp_anim](https://user-images.githubusercontent.com/45672199/198697520-18d20623-cddd-4916-8bb9-0985701497c3.gif)
