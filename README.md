@@ -2,10 +2,10 @@
 
 ## Description
 
-This <b>Prodecural Generation Project</b> is a graphics programming project made with C++ and OpenGL. The user is able to configure settings to generate Minecraft-inspired landscapes containing multiple settings that differ in vegetation and geographical aesthetics.
+This <b>Prodecural Generation Project</b> is a graphics programming project made with C++ and OpenGL. It is a solo project created as part of my seventh semester. The user is able to set configurations to generate Minecraft-inspired landscapes containing multiple settings that differ in vegetation and geographical aesthetics.
 The application reads in noise visuals to then generate and render various cube-based entities each with different textures in accordance to the given vegetation. PGP was a great opportunity to dive deeper into more low-level concepts such as rendering, performance optimisation, memory management and multithreading.
 
-Project Description on my <a href="https://michael-gebhart.com/projects/PGP.html">portfolio website</a>.
+Project page on my <a href="https://michael-gebhart.com/projects/PGP.html">portfolio website</a>.
 Project and Documentation on my <a href="https://drive.google.com/drive/folders/1D6GbXNsoCSvGSosJ7Im4Ap7GzGTJWdXM">Google Drive</a>.
 
 ## Instructions
@@ -26,7 +26,7 @@ Project and Documentation on my <a href="https://drive.google.com/drive/folders/
 <li>Additionally: Project Settings can be defined in PGP_Config.h.</li>
 </ol>
 
-Pls note: on the first time generation, the landscape can be loaded right behind "you".
+Pls note: after starting the scene and triggering the first generation, the landscape can be loaded right behind "you".
 
 ## Media
 
