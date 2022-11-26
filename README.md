@@ -6,7 +6,7 @@ This <b>Prodecural Generation Project</b> is a graphics programming project made
 The application reads in noise visuals to then generate and render various cube-based entities each with different textures in accordance to the given vegetation. PGP was a great opportunity to dive deeper into more low-level concepts such as rendering, performance optimisation, memory management and multithreading.
 
 Project page on my <a href="https://michael-gebhart.com/projects/PGP.html">portfolio website</a>.
-Full project and documentation on my <a href="https://drive.google.com/drive/folders/1D6GbXNsoCSvGSosJ7Im4Ap7GzGTJWdXM">Google Drive</a>.
+Full executable project (.zip) and documentation (.pdf) on my <a href="https://drive.google.com/drive/folders/1D6GbXNsoCSvGSosJ7Im4Ap7GzGTJWdXM">Google Drive</a>.
 
 ### Features
 
